@@ -1069,7 +1069,7 @@ void bin_update7_mGP2D() {
 }
 
 // 2D cGP2D
-void __bin_update7_cGP2D(cell_t* cells, bin_t* bins, area_t* areas, float** localAr, float** localAr2, size_t* bound, double* time, double* time2) {
+void __bin_update7_cGP2D(cell_den_t* cells, bin_t* bins, area_t* areas, float** localAr, float** localAr2, size_t* bound, double* time, double* time2) {
     gsum_ovf_area = 0;
     gsum_phi = 0;
     TIER* tier = &tier_st[0];
@@ -1088,9 +1088,9 @@ void __bin_update7_cGP2D(cell_t* cells, bin_t* bins, area_t* areas, float** loca
         #pragma omp parallel for num_threads(numThread)
 	for(int p = 0 ; p < tier->cell_cnt; ++p) {
 	    int tid = omp_get_thread_num(); 
-            cell_t* cell = &cells[p];
+            cell_den_t* cell = &cells[p];
             pos_t b0, b1;
-            fpos2_t den_pmin = cell->den_pmin, den_pmax = cell->den_pmax;
+            fpos2_t den_pmin = cell->min, den_pmax = cell->max;
             b0.x = INT_DOWN((den_pmin.x - tier->bin_org.x) * tier->inv_bin_stp.x);
             b0.y = INT_DOWN((den_pmin.y - tier->bin_org.y) * tier->inv_bin_stp.y);
             b1.x = INT_DOWN((den_pmax.x - tier->bin_org.x) * tier->inv_bin_stp.x);
@@ -1103,8 +1103,8 @@ void __bin_update7_cGP2D(cell_t* cells, bin_t* bins, area_t* areas, float** loca
             if(b1.x > tier->dim_bin.x - 1) b1.x = tier->dim_bin.x - 1;
             if(b1.y < 0) b1.y = 0;
             if(b1.y > tier->dim_bin.y - 1) b1.y = tier->dim_bin.y - 1;
-            cell->b0 = b0;
-            cell->b1 = b1;
+            cell->binStart = b0;
+            cell->binEnd = b1;
             int idx = b0.x * tier->dim_bin.y + b0.y;
 
             int x = 0, y = 0;
@@ -1118,7 +1118,7 @@ void __bin_update7_cGP2D(cell_t* cells, bin_t* bins, area_t* areas, float** loca
                     prec max_y = min(bpy->pmax.y, den_pmax.y);
                     prec min_y = max(bpy->pmin.y, den_pmin.y);
                     prec area_share = (max_x - min_x) * (max_y - min_y) * cell->scale;
-                    switch(cell->flg) {
+                    switch(cell->type) {
                         case FillerCell: localAr2[tid][idx] += area_share; break;
                         case Macro: localAr[tid][idx] += area_share; break;
                         default: localAr[tid][idx] += area_share; break;                    

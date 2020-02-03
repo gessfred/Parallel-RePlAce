@@ -49,11 +49,11 @@ struct fpos2_t {
 
 
 //pins as a charge 
-struct charge_t {
-    fpos2_t e1;
-    fpos2_t e2;
-    fpos2_t fp;
-    int idx;
+struct pin_t {
+    fpos2_t expL;
+    fpos2_t expR;
+    fpos2_t coord;
+    int pinID;
     int moduleID;
     int netID;
     bitset<9> meta;// flg2(x, y) flg1(x, y) term
@@ -63,50 +63,39 @@ struct charge_t {
 };
 
 //for density area_share...
-struct cell_t {
-    pos_t b0;
-    pos_t b1;
-    fpos2_t den_pmin;
-    fpos2_t den_pmax;
-    fpos2_t pmin;
-    fpos2_t pmax;
-    fpos2_t half_size;
+struct cell_den_t {
+    pos_t binStart;
+    pos_t binEnd;
+    fpos2_t min;
+    fpos2_t max;
+    fpos2_t size; // half_size
     float scale;
-    char flg;//()
+    char type;//()
     void from(CELLx*);
     void to(CELLx*);    
 };
 
-struct field_t{
-    charge_t* pin;
-    fpos2_t sum_num1;
-    fpos2_t sum_num2;
-    fpos2_t sum_denom1;
-    fpos2_t sum_denom2;
+struct net_t {
+    pin_t* pinArray;
+    fpos2_t sumNumL;
+    fpos2_t sumNumR;
+    fpos2_t sumDenomL;
+    fpos2_t sumDenomR;
     fpos2_t min;
-    //fpos2_t terMin;
-    //fpos2_t terMax;
     fpos2_t max;
     int pinCNT;
- inline void from(NET* net); 
-                        
- inline void copy(NET* net); 
+
+    inline void from(NET* net); 
+    inline void copy(NET* net); 
 };
 
 //cell as a collection of pins
-struct io_t{
-    charge_t** pins;
+struct cell_phy_t {
+    pin_t** pinArrayPtr;
     int pinCNT;
-    char flg;
-inline void from(CELLx* cell, field_t* nets);    
-};
-
-//pin as a position
-struct pin_t {
-    fpos2_t fp;
-    int moduleID;
-    bitset<5> meta;// Y_MAX | X_MAX | Y_MIN | X_MIN | term
- inline void from(PIN* pin);
+    char type;
+    
+    inline void from(CELLx* cell, net_t* nets);    
 };
 
 //Represent all the cells in of itself
@@ -144,7 +133,7 @@ struct Cell_t {
         pmax_y = (float*)calloc(sizeof(float), N);
         half_size_x = (float*)calloc(sizeof(float), N);
         half_size_y = (float*)calloc(sizeof(float), N);
-	scale = (float*)calloc(sizeof(float), N);
+	    scale = (float*)calloc(sizeof(float), N);
         flg = (char*)calloc(sizeof(char), N);
         b0_x = (float*)calloc(sizeof(float), N);
         b0_y = (float*)calloc(sizeof(float), N);
@@ -155,8 +144,8 @@ struct Cell_t {
 
     inline void copy(CELLx* origin); 
     inline void copyback(CELLx* destination);
-inline void Copy(cell_t* origin); 
-    inline void Copyback(cell_t* destination);
+    //inline void Copy(cell_t* origin); 
+    //inline void Copyback(cell_t* destination);
     inline void destroy() {
         free(center_x);
         free(center_y);
@@ -179,8 +168,8 @@ inline void Copy(cell_t* origin);
     }
 };
 
-vector<int> refIo(io_t* cells, size_t numberOfCells);
-vector<int> refNets(field_t* nets, size_t numberOfNets);
+vector<int> refIo(cell_phy_t* cells, size_t numberOfCells);
+vector<int> refNets(net_t* nets, size_t numberOfNets);
 vector<int> refCells(Cell_t* cells);
 inline size_t* schedule(vector<int> data, unsigned int numberOfThreads) {
 	size_t tid=0;

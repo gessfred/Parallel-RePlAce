@@ -68,6 +68,6 @@ void potn_grad(int cell_idx, struct FPOS *grad);
 void potn_grad_local(int cell_idx, struct FPOS *grad, prec *cellLambda);
 void potn_grad_2D(int cell_idx, struct FPOS *grad);
 void potn_grad_2D_local(int cell_idx, struct FPOS *grad, prec *cellLambda);
-void __potn_grad_2D_local__(cell_t* cell, bin_t* bins, fpos2_t *grad, prec *cellLambda);
+void __potn_grad_2D_local__(cell_den_t* cell, bin_t* bins, fpos2_t *grad, prec *cellLambda);
 
 #endif

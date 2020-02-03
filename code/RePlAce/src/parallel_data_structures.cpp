@@ -1,13 +1,13 @@
 #include "parallel_data_structures.hpp"
 
-vector<int> refIo(io_t* cells, size_t numberOfCells) {
+vector<int> refIo(cell_phy_t* cells, size_t numberOfCells) {
     vector<int> cellsRefs;
     for(size_t i = 0; i < numberOfCells; ++i) 
         cellsRefs.push_back(cells[i].pinCNT);
     return cellsRefs;
 }
 
-vector<int> refNets(field_t* nets, size_t numberOfNets) {
+vector<int> refNets(net_t* nets, size_t numberOfNets) {
     vector<int> cellsRefs;
     for(size_t i = 0; i < numberOfNets; ++i) 
         cellsRefs.push_back(nets[i].pinCNT);

@@ -229,7 +229,7 @@ void bin_update7(int N);
 void bin_update7_cGP2D(double* time0, double* time1);
 void Density(Cell_t* cells, Bin_t* bins, int* bound, float** localAr, float** localAr2);
 void __density__(Cell_t* cells, Bin_t* bins, TIER *tier);
-void __bin_update7_cGP2D(cell_t* cells, bin_t* bins, area_t* areas, float** localAr, float** localAr2, size_t* bound, double* time, double* time2);
+void __bin_update7_cGP2D(cell_den_t* cells, bin_t* bins, area_t* areas, float** localAr, float** localAr2, size_t* bound, double* time, double* time2);
 void CellBox(Cell_t* cells);
 void FFTSolve(bin_t* bins, area_t* areas);
 void bin_update7_mGP2D();
@@ -362,6 +362,6 @@ void bin_init_mGP2D(void);
 void bin_init_cGP2D(void);
 
 int compare(const void *p1, const void *p2);
-void __FFTsolve__(cell_t* cell, bin_t* bins, area_t* areas);
+void __FFTsolve__(cell_den_t* cell, bin_t* bins, area_t* areas);
 
 #endif

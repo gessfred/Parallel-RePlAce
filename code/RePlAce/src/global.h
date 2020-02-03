@@ -163,7 +163,7 @@ struct pin_t;
 struct pos_t;
 //struct net_t;
 struct fpos2_t;
-struct field_t;
+struct net_t;
 
 inline void FPOS::from(fpos2_t fp) {
         x = fp.x;
@@ -187,19 +187,19 @@ inline void POS::Set(FPOS fp) {
     z = (int)(fp.z + 0.5f);
 }
 
-inline void charge_t::from(PIN* pin) {
-        e1.from(pin->e1);
-        e2.from(pin->e2);
-        fp.from(pin->fp);
-        idx = pin->pinIDinModule;
+inline void pin_t::from(PIN* pin) {
+        expL.from(pin->e1);
+        expR.from(pin->e2);
+        coord.from(pin->fp);
+        pinID = pin->pinIDinModule;
         __getMeta__();
         netID = pin->netID;
         moduleID = pin->moduleID;
     }
-inline void charge_t::to(PIN* pin) {
-    pin->e1.from(e1);
-    pin->e2.from(e2);
-    pin->fp.from(fp);
+inline void pin_t::to(PIN* pin) {
+    pin->e1.from(expL);
+    pin->e2.from(expR);
+    pin->fp.from(coord);
     pin->term = meta[0]; 
     pin->X_MIN = meta[1]; 
     pin->X_MAX = meta[2]; 
@@ -223,22 +223,20 @@ inline void fpos2_t::from(FPOS fp) {
         y = fp.y;
     }
 
-inline void cell_t::from(CELLx* cell) {
-    den_pmin.from(cell->den_pmin);
-    den_pmax.from(cell->den_pmax);
+inline void cell_den_t::from(CELLx* cell) {
+    min.from(cell->den_pmin);
+    max.from(cell->den_pmax);
     //pmin.from(cell->pmin);
     //pmax.from(cell->pmax);
-    half_size.from(cell->half_den_size);
+    size.from(cell->half_den_size);
     scale = cell->den_scal;
-    flg = cell->flg;
+    type = cell->flg;
 }
-inline void cell_t::to(CELLx* cell) {
-    cell->den_pmin.from(den_pmin);
-    cell->den_pmax.from(den_pmax);
-    //cell->pmin.from(pmin);
-    //cell->pmax.from(pmax);
-    cell->half_den_size.from(half_size);
-    cell->flg = flg;
+inline void cell_den_t::to(CELLx* cell) {
+    cell->den_pmin.from(min);
+    cell->den_pmax.from(max);
+    cell->half_den_size.from(size);
+    cell->flg = type;
 }
 
 class SHAPE {
@@ -350,66 +348,47 @@ struct TIER {
     struct TILE *tile_mat;
 };
 
-inline void pin_t::from(PIN* pin) {
-        moduleID = pin->moduleID;
-        meta[0] = pin->term;
-        meta[1] = pin->X_MIN;
-        meta[2] = pin->X_MAX;
-        meta[3] = pin->Y_MIN;
-        meta[4] = pin->Y_MAX;
-        fp.from(pin->fp);
-    }
 
-inline void PIN::from(pin_t pin) {
-        fp.from(pin.fp);
-        X_MIN = pin.meta[1];
-        X_MAX = pin.meta[2];
-        Y_MIN = pin.meta[3];
-        Y_MAX = pin.meta[4];
-    }
-
-
-
-inline void field_t::from(NET* net) {
-    sum_num1.from(net->sum_num1);
-    sum_denom1.from(net->sum_denom1);
-    sum_num2.from(net->sum_num2);
-    sum_denom2.from(net->sum_denom2);
+inline void net_t::from(NET* net) {
+    sumNumL.from(net->sum_num1);
+    sumDenomL.from(net->sum_denom1);
+    sumNumR.from(net->sum_num2);
+    sumDenomR.from(net->sum_denom2);
     //min.set(net->min_x, net->min_y);
     //max.set(net->max_x, net->max_y);
     min.set(net->terminalMin.x, net->terminalMin.y);
     max.set(net->terminalMax.x, net->terminalMax.y);
     pinCNT = net->pinCNTinObject;
-    pin = (charge_t*)calloc(sizeof(charge_t), pinCNT);
+    pinArray = (pin_t*)calloc(sizeof(pin_t), pinCNT);
     for(int k = 0; k < pinCNT; ++k) {
-        pin[k].from(net->pin[k]); //this copy is unnecessary, those values are not read where this type is used
+        pinArray[k].from(net->pin[k]); //this copy is unnecessary, those values are not read where this type is used
     }
 }
-inline void field_t::copy(NET* net) {
-    sum_num1.from(net->sum_num1);
-    sum_denom1.from(net->sum_denom1);
-    sum_num2.from(net->sum_num2);
-    sum_denom2.from(net->sum_denom2);
+inline void net_t::copy(NET* net) {
+    sumNumL.from(net->sum_num1);
+    sumDenomL.from(net->sum_denom1);
+    sumNumR.from(net->sum_num2);
+    sumDenomR.from(net->sum_denom2);
     //min.set(net->min_x, net->min_y);
     //max.set(net->max_x, net->max_y);
     min.set(net->min_x, net->min_y);
     max.set(net->max_x, net->max_y);
     pinCNT = net->pinCNTinObject;
-    pin = (charge_t*)calloc(sizeof(charge_t), pinCNT);
+    pinArray = (pin_t*)calloc(sizeof(pin_t), pinCNT);
     for(int k = 0; k < pinCNT; ++k) {
-        pin[k].from(net->pin[k]);
+        pinArray[k].from(net->pin[k]);
     }
 }
 
 
 
-inline void io_t::from(CELLx* cell, field_t* nets) {
-    flg = cell->flg;
+inline void cell_phy_t::from(CELLx* cell, net_t* nets) {
+    type = cell->flg;
     pinCNT = cell->pinCNTinObject;
-    pins = (charge_t**)calloc(sizeof(charge_t*), pinCNT);
+    pinArrayPtr = (pin_t**)calloc(sizeof(pin_t*), pinCNT);
     for(int k = 0; k < pinCNT; ++k) {
         PIN* p = cell->pin[k];
-        pins[k] = &nets[p->netID].pin[p->pinIDinNet];
+        pinArrayPtr[k] = &nets[p->netID].pinArray[p->pinIDinNet];
     }
 }
 
@@ -426,89 +405,89 @@ inline void io_t::from(CELLx* cell, field_t* nets) {
     }
 
 */
-inline void NET::copy(field_t* net) {
-    sum_num1.from(net->sum_num1);
-    sum_denom1.from(net->sum_denom1);
-    sum_num2.from(net->sum_num2);
-    sum_denom2.from(net->sum_denom2);
+inline void NET::copy(net_t* net) {
+    sum_num1.from(net->sumNumL);
+    sum_denom1.from(net->sumDenomL);
+    sum_num2.from(net->sumNumR);
+    sum_denom2.from(net->sumDenomR);
     min_x = net->min.x;
     min_y = net->min.y;
     max_x = net->max.x;
     max_y = net->max.y;
     for(int k = 0; k < pinCNTinObject; ++k) {
-        net->pin[k].to(pin[k]);
+        net->pinArray[k].to(pin[k]);
     }
-    free(net->pin);
+    free(net->pinArray);
 }
 
-  inline void Cell_t::copy(CELLx* origin) {
-        for(size_t i = 0; i < size; ++i) {
-            den_pmin_x[i] = origin[i].den_pmin.x;
-            den_pmin_y[i] = origin[i].den_pmin.y;
-            den_pmax_x[i] = origin[i].den_pmax.x;
-            den_pmax_y[i] = origin[i].den_pmax.y;
-            //pmin_x[i] = origin[i].pmin.x;
-            //pmin_y[i] = origin[i].pmin.y;
-            pmax_x[i] = origin[i].pmax.x;
-            pmax_y[i] = origin[i].pmax.y;
-            half_size_x[i] = origin[i].half_den_size.x;
-            half_size_y[i] = origin[i].half_den_size.y;
-            scale[i] = origin[i].den_scal;
-            flg[i] = origin[i].flg;
-        }
+inline void Cell_t::copy(CELLx* origin) {
+    for(size_t i = 0; i < size; ++i) {
+        den_pmin_x[i] = origin[i].den_pmin.x;
+        den_pmin_y[i] = origin[i].den_pmin.y;
+        den_pmax_x[i] = origin[i].den_pmax.x;
+        den_pmax_y[i] = origin[i].den_pmax.y;
+        //pmin_x[i] = origin[i].pmin.x;
+        //pmin_y[i] = origin[i].pmin.y;
+        pmax_x[i] = origin[i].pmax.x;
+        pmax_y[i] = origin[i].pmax.y;
+        half_size_x[i] = origin[i].half_den_size.x;
+        half_size_y[i] = origin[i].half_den_size.y;
+        scale[i] = origin[i].den_scal;
+        flg[i] = origin[i].flg;
     }
+}
 
-    inline void Cell_t::copyback(CELLx* destination) {
-        for(size_t i = 0; i < size; ++i) {
-            destination[i].den_pmin.x = den_pmin_x[i];
-            destination[i].den_pmin.y = den_pmin_y[i];
-            destination[i].den_pmax.x = den_pmax_x[i];
-            destination[i].den_pmax.y = den_pmax_y[i];
-            //destination[i].pmin.x = pmin_x[i];
-            //destination[i].pmin.y = pmin_y[i];
-            destination[i].pmax.x = pmax_x[i];
-            destination[i].pmax.y = pmax_y[i];
-            destination[i].half_den_size.x = half_size_x[i];
-            destination[i].half_den_size.y = half_size_y[i];
-            destination[i].den_scal = scale[i];
-            destination[i].flg = flg[i];
-        }
+inline void Cell_t::copyback(CELLx* destination) {
+    for(size_t i = 0; i < size; ++i) {
+        destination[i].den_pmin.x = den_pmin_x[i];
+        destination[i].den_pmin.y = den_pmin_y[i];
+        destination[i].den_pmax.x = den_pmax_x[i];
+        destination[i].den_pmax.y = den_pmax_y[i];
+        //destination[i].pmin.x = pmin_x[i];
+        //destination[i].pmin.y = pmin_y[i];
+        destination[i].pmax.x = pmax_x[i];
+        destination[i].pmax.y = pmax_y[i];
+        destination[i].half_den_size.x = half_size_x[i];
+        destination[i].half_den_size.y = half_size_y[i];
+        destination[i].den_scal = scale[i];
+        destination[i].flg = flg[i];
     }
-
+}
+/*
 inline void Cell_t::Copy(cell_t* origin) {
-        for(size_t i = 0; i < size; ++i) {
-            den_pmin_x[i] = origin[i].den_pmin.x;
-            den_pmin_y[i] = origin[i].den_pmin.y;
-            den_pmax_x[i] = origin[i].den_pmax.x;
-            den_pmax_y[i] = origin[i].den_pmax.y;
-            //pmin_x[i] = origin[i].pmin.x;
-            //pmin_y[i] = origin[i].pmin.y;
-            //pmax_x[i] = origin[i].pmax.x;
-            //pmax_y[i] = origin[i].pmax.y;
-            half_size_x[i] = origin[i].half_size.x;
-            half_size_y[i] = origin[i].half_size.y;
-            scale[i] = origin[i].scale;
-            flg[i] = origin[i].flg;
-        }
+    for(size_t i = 0; i < size; ++i) {
+        den_pmin_x[i] = origin[i].min.x;
+        den_pmin_y[i] = origin[i].min.y;
+        den_pmax_x[i] = origin[i].max.x;
+        den_pmax_y[i] = origin[i].max.y;
+        //pmin_x[i] = origin[i].pmin.x;
+        //pmin_y[i] = origin[i].pmin.y;
+        //pmax_x[i] = origin[i].pmax.x;
+        //pmax_y[i] = origin[i].pmax.y;
+        half_size_x[i] = origin[i].size.x;
+        half_size_y[i] = origin[i].size.y;
+        scale[i] = origin[i].scale;
+        flg[i] = origin[i].type;
     }
+}
 
-    inline void Cell_t::Copyback(cell_t* destination) {
-        for(size_t i = 0; i < size; ++i) {
-            destination[i].den_pmin.x = den_pmin_x[i];
-            destination[i].den_pmin.y = den_pmin_y[i];
-            destination[i].den_pmax.x = den_pmax_x[i];
-            destination[i].den_pmax.y = den_pmax_y[i];
-            //destination[i].pmin.x = pmin_x[i];
-            //destination[i].pmin.y = pmin_y[i];
-            //destination[i].pmax.x = pmax_x[i];
-            //destination[i].pmax.y = pmax_y[i];
-            destination[i].half_size.x = half_size_x[i];
-            destination[i].half_size.y = half_size_y[i];
-            destination[i].scale = scale[i];
-            destination[i].flg = flg[i];
-        }
+inline void Cell_t::Copyback(cell_t* destination) {
+    for(size_t i = 0; i < size; ++i) {
+        destination[i].den_pmin.x = den_pmin_x[i];
+        destination[i].den_pmin.y = den_pmin_y[i];
+        destination[i].den_pmax.x = den_pmax_x[i];
+        destination[i].den_pmax.y = den_pmax_y[i];
+        //destination[i].pmin.x = pmin_x[i];
+        //destination[i].pmin.y = pmin_y[i];
+        //destination[i].pmax.x = pmax_x[i];
+        //destination[i].pmax.y = pmax_y[i];
+        destination[i].half_size.x = half_size_x[i];
+        destination[i].half_size.y = half_size_y[i];
+        destination[i].scale = scale[i];
+        destination[i].flg = flg[i];
     }
-
+}
+*/
 struct cpu_t {
     double total;
     double ip;

@@ -412,17 +412,17 @@ void myNesterov::InitializationIter() {
 }
 
 //area share of a cell
-void __areaShare__(cell_t* cells, bin_t* bins, FPOS* grad, int i) {
+void __areaShare__(cell_den_t* cells, bin_t* bins, FPOS* grad, int i) {
         grad->SetZero();
-    cell_t cell = cells[i];
+    cell_den_t cell = cells[i];
     POS b0, b1;
     
     TIER *tier = &tier_st[0];
 
-    b0.x = cell.b0.x;
-    b0.y = cell.b0.y;
-    b1.x = cell.b1.x;
-    b1.y = cell.b1.y;
+    b0.x = cell.binStart.x;
+    b0.y = cell.binStart.y;
+    b1.x = cell.binEnd.x;
+    b1.y = cell.binEnd.y;
 
     bin_t *bpx = NULL, *bpy = NULL;
     int x = 0, y = 0;
@@ -430,12 +430,12 @@ void __areaShare__(cell_t* cells, bin_t* bins, FPOS* grad, int i) {
 
     for(x = b0.x, bpx = &bins[idx]; x <= b1.x; x++, bpx += tier->dim_bin.y) {
 
-        prec max_x = min(bpx->pmax.x, cell.den_pmax.x);
-        prec min_x = max(bpx->pmin.x, cell.den_pmin.x);
+        prec max_x = min(bpx->pmax.x, cell.max.x);
+        prec min_x = max(bpx->pmin.x, cell.min.x);
 
         for(y = b0.y, bpy = bpx; y <= b1.y; y++, bpy++) {
-            prec max_y = min(bpy->pmax.y, cell.den_pmax.y);
-            prec min_y = max(bpy->pmin.y, cell.den_pmin.y);
+            prec max_y = min(bpy->pmax.y, cell.max.y);
+            prec min_y = max(bpy->pmin.y, cell.min.y);
             prec area_share = (max_x - min_x) * (max_y - min_y) * cell.scale;
             grad->x += area_share * bpy->e.x;
             grad->y += area_share * bpy->e.y;
@@ -445,12 +445,12 @@ void __areaShare__(cell_t* cells, bin_t* bins, FPOS* grad, int i) {
 //filler=true
 void __FILLgradient__(FPOS *dst, FPOS *wdst,
                           FPOS *pdst, FPOS *pdstl, int N,
-                          prec *cellLambdaArr, bool onlyPreCon, bin_t* bins, io_t* ios, field_t* nets, double* time, cell_t* cels) {
+                          prec *cellLambdaArr, bool onlyPreCon, bin_t* bins, cell_phy_t* ios, net_t* nets, double* time, cell_den_t* cels) {
     time_start(time);
     struct FPOS wgrad, pgrad, pgradl, wpre, charge_dpre, pre;
     #pragma omp parallel for num_threads(numThread)
     for(int i = moduleCNT; i < N; i++) {
-        if(cels[i].flg != FillerCell) continue;
+        if(cels[i].type != FillerCell) continue;
         if(STAGE == cGP2D) {
             if(constraintDrivenCMD == false) __areaShare__(cels, bins, &pgrad, i);
         }
@@ -483,7 +483,7 @@ void __FILLgradient__(FPOS *dst, FPOS *wdst,
  * */
 void __gradient__(FPOS *dst, FPOS *wdst,
                           FPOS *pdst, FPOS *pdstl, int N,
-                          prec *cellLambdaArr, bool onlyPreCon, bin_t* bins, io_t* ios, field_t* nets, double* time, size_t* W1, cell_t* cels) {
+                          prec *cellLambdaArr, bool onlyPreCon, bin_t* bins, cell_phy_t* ios, net_t* nets, double* time, size_t* W1, cell_den_t* cels) {
     struct FPOS wpre, charge_dpre, pre;
     auto t0 = std::chrono::steady_clock::now();
     #pragma omp parallel num_threads(numThread)
@@ -493,7 +493,7 @@ void __gradient__(FPOS *dst, FPOS *wdst,
         int end = (tid < numThread-1) ? W1[tid] : N;
         for(int i = start; i < end; ++i) {
             FPOS wgrad;
-            if(STAGE == cGP2D && cels[i].flg == Macro) wgrad.SetZero();
+            if(STAGE == cGP2D && cels[i].type == Macro) wgrad.SetZero();
             else __wlen_grad__(&ios[i], nets, &wgrad);
             wdst[i] = wgrad;
             dst[i].x = wgrad.x;
@@ -507,7 +507,7 @@ void __gradient__(FPOS *dst, FPOS *wdst,
     for(int i = 0; i < N; i++) {
         FPOS pgrad;
         if(STAGE == cGP2D) { //look to delete this test
-            if(cels[i].flg == Macro) pgrad.SetZero();
+            if(cels[i].type == Macro) pgrad.SetZero();
             else __areaShare__(cels, bins, &pgrad, i);
         }
         pdst[i] = pgrad;
@@ -533,7 +533,7 @@ void __gradient__(FPOS *dst, FPOS *wdst,
     }
     profile.pre += time_since(t0);
 }
-void myNesterov::__post_filler__(int i, cell_t* cells, bin_t* bins, io_t* ios, field_t* mesh) {
+void myNesterov::__post_filler__(int i, cell_den_t* cells, bin_t* bins, cell_phy_t* ios, net_t* mesh) {
         FILLER_PLACE = 0;
         if((isFirst_gp_opt == false) && post_filler == 0) {
             if(i < NUM_ITER_FILLER_PLACE) {
@@ -562,7 +562,7 @@ int myNesterov::__optimize__() {
     temp_iter = 0;
     bool timeon = false;
     double time = 0.0f;
-    field_t* mesh = (field_t*)malloc(sizeof(field_t) * netCNT);
+    net_t* mesh = (net_t*)malloc(sizeof(net_t) * netCNT);
     fpos2_t** pof = (fpos2_t**)calloc(sizeof(fpos2_t*), moduleCNT);
     for(int i = 0; i < moduleCNT; i++) {
         MODULE* curModule = &moduleInstance[i];
@@ -573,10 +573,10 @@ int myNesterov::__optimize__() {
     }
     bin_t* bins = (bin_t*)calloc(sizeof(bin_t), tier->tot_bin_cnt);
     area_t* areas = (area_t*)calloc(sizeof(area_t), tier->tot_bin_cnt);
-    cell_t* cells = (cell_t*)calloc(sizeof(cell_t), N);
+    cell_den_t* cells = (cell_den_t*)calloc(sizeof(cell_den_t), N);
     Cell_t dCells;
     dCells.build(N);
-    io_t* ios = (io_t*)calloc(sizeof(io_t), N);
+    cell_phy_t* ios = (cell_phy_t*)calloc(sizeof(cell_phy_t), N);
     for(int k = 0; k < netCNT; ++k) {
         mesh[k].from(&netInstance[k]);
     }
@@ -605,13 +605,13 @@ int myNesterov::__optimize__() {
     }  
     for(int i = 0; i < N; i++) {
         CELLx* cell = &gcell_st[i];
-        io_t* cpy = &ios[i];
-        cpy->flg = cell->flg;
+        cell_phy_t* cpy = &ios[i];
+        cpy->type = cell->flg;
         cpy->pinCNT = cell->pinCNTinObject;
-        cpy->pins = (charge_t**)calloc(sizeof(charge_t*), cpy->pinCNT);
+        cpy->pinArrayPtr = (pin_t**)calloc(sizeof(pin_t*), cpy->pinCNT);
         for(int k = 0; k < cell->pinCNTinObject; ++k) {
             PIN* p = cell->pin[k];
-            cpy->pins[k] = &mesh[p->netID].pin[p->pinIDinNet];
+            cpy->pinArrayPtr[k] = &mesh[p->netID].pinArray[p->pinIDinNet];
         }
     }
 	cout << "scheduling..." << endl;
@@ -1191,11 +1191,11 @@ void myNesterov::UpdateNesterovOptStatus() {
 }
 
 // this only calculate HPWL based on the stored value in NET's ure
-prec __GetHpwl__(field_t* nets) {
+prec __GetHpwl__(net_t* nets) {
     total_hpwl.SetZero();
     total_stnwl.SetZero();
     for(int i = 0; i < netCNT; i++) {
-        field_t *curNet = &nets[i];
+        net_t *curNet = &nets[i];
         if(curNet->pinCNT > 1){
         total_hpwl.x += curNet->max.x - curNet->min.x;
         total_hpwl.y += curNet->max.y - curNet->min.y;
@@ -1249,7 +1249,7 @@ void myNesterov::UpdateNesterovIter(int iter, struct ITER *it, struct ITER *last
     PrintNesterovOptStatus(iter);
     fflush(stdout);
 }
-void myNesterov::__UpdateNesterovIter__(field_t* nets, int iter, struct ITER *it, struct ITER *last_it) {
+void myNesterov::__UpdateNesterovIter__(net_t* nets, int iter, struct ITER *it, struct ITER *last_it) {
     it->grad = get_norm(y_dst, N, 2.0);
     it->potn = gsum_phi;
     it->ovfl = gsum_ovfl;

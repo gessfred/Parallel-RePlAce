@@ -111,12 +111,12 @@ class myNesterov {
     void InitializationCostFunctionGradient(prec *, prec *);
     int DoNesterovOptimization(void);
     int __optimize__(void);
-    void __post_filler__(int i, cell_t* cells, bin_t* bins, io_t* ios, field_t* mesh);
+    void __post_filler__(int i, cell_den_t* cells, bin_t* bins, cell_phy_t* ios, net_t* mesh);
     void mkl_malloc_free(void);
     void SummarizeNesterovOpt(int last_index);
     void UpdateNesterovOptStatus(void);
     void UpdateNesterovIter(int iter, struct ITER *it, struct ITER *last_it);
-    void __UpdateNesterovIter__(field_t* nets, int iter, struct ITER *it, struct ITER *last_it);
+    void __UpdateNesterovIter__(net_t* nets, int iter, struct ITER *it, struct ITER *last_it);
     void ShiftPL_SA(struct FPOS *y_st, int N);
     void ShiftPL_SA_sub(struct FPOS *y_st, int N);
     void z_init(void);

@@ -88,7 +88,7 @@ inline void wlen_grad_wa(int cell_idx,  FPOS *grad);
 void get_net_wlen_grad_lse( NET *net,  PIN *pin,  FPOS *grad);
 inline void get_net_wlen_grad_wa( FPOS obj,  NET *net,
                                   PIN *pin,  FPOS *grad);
-                                  void __wlen_grad__(io_t* cell, field_t* nets, FPOS *grad);
+void __wlen_grad__(cell_phy_t* cell, net_t* nets, FPOS *grad);
 
 inline void wlen_pre(int cell_idx,  FPOS *wpre) {
     *wpre = zeroFPoint;
@@ -152,8 +152,8 @@ void net_update( FPOS *st);
 void net_update_lse( FPOS *st);
 void net_update_wa( FPOS *st);
 void __net_update_wa(FPOS *st, double* time);
-void __wirelength__(field_t* nets, cell_t* cells, FPOS *st, fpos2_t** poff, size_t* wrk_ld, double* time);//, cell_t* cells);
-void __dwlen__(fpos2_t obj, field_t *net, charge_t *pin, fpos2_t *grad) ;
+void __wirelength__(net_t* nets, cell_den_t* cells, FPOS *st, fpos2_t** poff, size_t* wrk_ld, double* time);//, cell_t* cells);
+void __dwlen__(fpos2_t obj, net_t *net, pin_t *pin, fpos2_t *grad) ;
 
 prec GetHpwl();
 prec UpdateNetAndGetHpwl();

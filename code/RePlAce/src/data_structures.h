@@ -12,7 +12,7 @@ struct POS;
 struct fpos2_t;
 struct pos_t;
 struct net_t;
-struct field_t;
+struct net_t;
 struct pin_t;
 struct FPOS {
     prec x;
@@ -454,5 +454,5 @@ struct NET {
     prec stn_cof;  // lutong
     prec wl_rsmt;  // lutong
     //inline void from(net_t net);
-    inline void copy(field_t* net);
+    inline void copy(net_t* net);
 };
