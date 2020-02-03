@@ -1,0 +1,166 @@
+<html><!-- #BeginTemplate "/Templates/home.dwt" -->
+<head>
+<!-- #BeginEditable "doctitle" --> 
+<title>Page Not Found | SIGDA, Special Interest Group on Design Automation | Association 
+for Computing Machinery</title>
+<!-- #EndEditable --> 
+<meta NAME="Description" CONTENT="ACM's Special Interest Group on Design Automation serves the Electronic Design Automation (EDA) community, including students, academic researchers, and practitioners.">
+<meta NAME="Keywords" CONTENT="EDA, electronic design automation, design automation, automation of electronic systems, CADathalon, UBooth, TODAES">
+<meta NAME="Author" CONTENT="Jackson Information Design">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<link rel="shortcut icon" href="images/sigda.ico" >
+<link rel="stylesheet" href="css/sigdastylesheet.css" type="text/css">
+<!--Copyright 2005, Association for Computing Machinery. All rights reserved. -->
+<!--Direct questions about this website to Diana Marculescu :: dianam@acm.org -->
+<!--Site design, development, and photography by Anne Jackson, Jackson Information Design  ::  annej@acm.org  ::  412-656-1091 -->
+<script language="JavaScript">
+//-->
+<!--Load navigation buttons mouse-over states: -->
+<!--
+function MM_preloadImages() { //v3.0
+  var d=document; if(d.images){ if(!d.MM_p) d.MM_p=new Array();
+    var i,j=d.MM_p.length,a=MM_preloadImages.arguments; for(i=0; i<a.length; i++)
+    if (a[i].indexOf("#")!=0){ d.MM_p[j]=new Image; d.MM_p[j++].src=a[i];}}
+}
+
+function MM_swapImgRestore() { //v3.0
+  var i,x,a=document.MM_sr; for(i=0;a&&i<a.length&&(x=a[i])&&x.oSrc;i++) x.src=x.oSrc;
+}
+
+function MM_findObj(n, d) { //v4.0
+  var p,i,x;  if(!d) d=document; if((p=n.indexOf("?"))>0&&parent.frames.length) {
+    d=parent.frames[n.substring(p+1)].document; n=n.substring(0,p);}
+  if(!(x=d[n])&&d.all) x=d.all[n]; for (i=0;!x&&i<d.forms.length;i++) x=d.forms[i][n];
+  for(i=0;!x&&d.layers&&i<d.layers.length;i++) x=MM_findObj(n,d.layers[i].document);
+  if(!x && document.getElementById) x=document.getElementById(n); return x;
+}
+
+function MM_swapImage() { //v3.0
+  var i,j=0,x,a=MM_swapImage.arguments; document.MM_sr=new Array; for(i=0;i<(a.length-2);i+=3)
+   if ((x=MM_findObj(a[i]))!=null){document.MM_sr[j++]=x; if(!x.oSrc) x.oSrc=x.src; x.src=a[i+2];}
+}
+//-->
+</script>
+</head>
+<body bgcolor="#FFFFFF" marginheight="0" topmargin="0" vspace="0" onLoad="MM_preloadImages('images/nav-about-on_85x20.jpg','images/nav-memberbens-on_165x20.jpg','images/nav-publications-on_100x20.jpg','images/nav-profdevel-on_200x20.jpg','images/nav-awards-on_75x20.jpg','images/nav-events-on_70x20.jpg','images/nav-contactus-on_105x20.jpg')">
+<table border="0" summary="SIGDA unitmark" width="800" cellspacing="0" cellpadding="0" align="center">
+  <tr valign="top"> 
+    <td><img src="images/sigda_header3.jpg" width="800" height="100" usemap="#SIGDAhome" border="0" alt="SIGDA: Special Interest Group on Design Automation"></td>
+  </tr>
+</table>
+<table width="800" summary="Navigation headings" border="0" cellspacing="0" cellpadding="0" align="center">
+  <tr> 
+    <td><a href="aboutsigda.html" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('aboutus','','images/nav-about-on_85x20.jpg',1)"><img src="images/nav-about-off_85x20.jpg" border="0" name="aboutus" width="85" height="20" alt="About SIGDA"></a><a href="membership.html" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('membership','','images/nav-memberbens-on_165x20.jpg',1)"><img src="images/nav-memberbens-off_165x20.jpg" width="165" height="20" name="membership" border="0" alt="SIGDA Membership"></a><a href="publications.html" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('publications','','images/nav-publications-on_100x20.jpg',1)"><img src="images/nav-publications-off_100x20.jpg" width="100" height="20" name="publications" border="0" alt="SIGDA Publications"></a><a href="profdevel.html" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('profdevel','','images/nav-profdevel-on_200x20.jpg',1)"><img src="images/nav-profdevel-off_200x20.jpg" width="200" height="20" name="profdevel" border="0" alt="Professional Development"></a><a href="awards.html" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('awards','','images/nav-awards-on_75x20.jpg',1)"><img src="images/nav-awards-off_75x20.jpg" width="75" height="20" name="awards" border="0" alt="Awards"></a><a href="events.html" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('events','','images/nav-events-on_70x20.jpg',1)"><img src="images/nav-events-off_70x20.jpg" width="70" height="20" name="events" border="0" alt="Events"></a><a href="contactus.html" onMouseOut="MM_swapImgRestore()" onMouseOver="MM_swapImage('contactus','','images/nav-contactus-on_105x20.jpg',1)"><img src="images/nav-contactus-off_105x20.jpg" width="105" height="20" name="contactus" border="0" alt="Contact Us"></a></td>
+  </tr>
+  <tr> 
+    <td colspan="3" background="images/000066-bluedot_08x20.gif" height="10">&nbsp;</td>
+  </tr>
+</table>
+<table width="800" summary="Headlines and page content" border="0" cellspacing="0" cellpadding="0" align="center">
+  <tr> 
+    <td valign="top" align="right" width="250"> 
+      <table width="100%" summary="Home page--News & Highlights" border="0" cellspacing="0" cellpadding="5">
+        <tr> 
+          <td height="18" background="images/focus_newshighlights_250x18.jpg"></td>
+        </tr>
+        <tr> 
+          <td> 
+            <div id="DeptName"> 
+              <ul id="bulletlist">
+                <li><a href="events.html" class="DkGray10">Upcoming Events</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+        <tr> 
+          <td> 
+            <div id="DeptName"> 
+              <ul id="bulletlist">
+                <li><a href="newsletter/index.html" class="DkGray10"> E-Newsletter</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+        <tr> 
+          <td> 
+            <div id="DeptName"> 
+              <ul id="bulletlist">
+                <li><a href="chairwelcome.html" class="DkGray10">SIGDA Chair's 
+                  Welcome</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+        <tr> 
+          <td> 
+            <div id="DeptName"> 
+              <ul id="bulletlist">
+                <li><a href="membership.html" class="DkGray10Bold">Join SIGDA</a></li>
+              </ul>
+            </div>
+          </td>
+        </tr>
+      </table>
+    </td>
+    <td valign="top" width="15" background="images/000066-bluegrayline_20x01.gif">&nbsp;</td>
+    <td valign="top" width="535"> 
+      <h2><!-- #BeginEditable "pagetitle" --><span class="DkBlue14Bold">404, Page Not Found</span><!-- #EndEditable --></h2>
+      <p class="DkGray12"><!-- #BeginEditable "content01" -->Sorry, we can't find 
+        the page that you're looking for. We recently revised our website. Try 
+        our <a href="index.html" class="DkBlue12">home page</a>, or <a href="aboutsigda.html" class="DkBlue12">About 
+        SIGDA</a> for more information on our organization. If you still can't 
+        find what you're looking for:<!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content02" -->The <a href="whoswho.html" class="DkBlue12">Who's 
+        Who page</a> lists our officers.<!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content03" -->The <a href="contactus.html" class="DkBlue12">Contact 
+        Us page</a> provides contact information for the SIGDA chair and for ACM's 
+        SIG staff.<!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content04" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content05" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content06" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content07" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content08" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content09" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content10" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content11" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content12" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content13" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content14" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content15" --><!-- #EndEditable --></p>
+      <p class="DkGray12"><!-- #BeginEditable "content16" --><!-- #EndEditable --></p>
+    </td>
+  </tr>
+</table>
+<p align="center" class="DkBlue10"><a href="index.html" class="urhere">SIGDA 
+  Home</a>&nbsp;|&nbsp;<a href="aboutsigda.html" class="DkBlue10">About SIGDA</a>&nbsp;|&nbsp;<a href="membership.html" class="DkBlue10">Membership 
+  Benefits</a>&nbsp;|&nbsp;<a href="publications.html" class="DkBlue10">Publications</a>&nbsp;|&nbsp;<a href="profdevel.html" class="DkBlue10">Professional 
+  Development</a>&nbsp;|&nbsp;<a href="awards.html" class="DkBlue10">Awards</a>&nbsp;|&nbsp;<a href="events.html" class="DkBlue10">Events</a>&nbsp;|&nbsp;<a href="contactus.html" class="DkBlue10">Contact 
+  Us</a></p>
+<table width="800" summary="ACM/Association for Computing Machinery contact information" border="0" >
+  <tr valign="middle"> 
+    <td width="105" valign="baseline"> 
+      <div align="right"><a href="http://www.acm.org/" target="_blank"><img src="images/acmlogo_40x40.gif" width="40" height="40" alt="Association for Computing Machinery" border="0" align="bottom" name="acm"></a></div>
+    </td>
+    <td width="3"></td>
+    <td width="100%" class="MdGray10" valign="middle">1515 Broadway, 17th Floor&nbsp;&nbsp;New 
+      York, NY 10036-5701&nbsp;&nbsp;USA&nbsp;&nbsp;(212) 869-7440</td>
+  </tr>
+</table>
+<map name="SIGDAhome"> 
+  <area shape="poly" coords="9,3,9,3,383,3,383,3,384,94,379,93,57,95" href="index.html" alt="SIGDA Home" title="SIGDA Home">
+  <area shape="poly" coords="23,44,23,44,6,60,6,60,26,80,25,80,40,60" href="http://www.acm.org" target="_blank" alt="ACM Home" title="ACM Home">
+</map>
+<p class="LtGray10"> 
+  <script language="JavaScript">
+<!--
+da = new Date(document.lastModified)
+db = da.toGMTString()
+dc = db.split(" ")
+if ( eval( dc[3] ) < 1970 ) dc[3] = eval( dc[3] ) +100
+db = dc[1] + " " + dc[2] + " " + dc[3]
+document.write ( "Last updated " + db )
+// -->
+</script>
+</p>
+</body>
+<!-- #EndTemplate --></html>

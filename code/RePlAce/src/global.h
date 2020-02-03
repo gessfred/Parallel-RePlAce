@@ -57,7 +57,6 @@
 #include <atomic>
 #include <chrono>
 
-#include </opt/intel/vtune_amplifier_2019/include/ittnotify.h>
 #include <bitset>
 #include "data_structures.h"
 #include "parallel_data_structures.hpp"

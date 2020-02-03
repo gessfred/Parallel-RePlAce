@@ -1,0 +1,11 @@
+#!/bin/sh
+rm -rf *.tgz 2> /dev/null
+for num in {1..10} 
+do
+    fname=ispd18_test${num}
+    wget http://www.ispd.cc/contests/18/${fname}.tgz
+    mkdir -p ${fname}
+    #echo 'downloaded... ' ${fname} 
+    #tar xvzf ${fname}.tgz -C ./$fname/
+    #rm -rf ${fname}.tgz 2> /dev/null
+done
