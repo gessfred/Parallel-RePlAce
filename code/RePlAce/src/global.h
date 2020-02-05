@@ -392,6 +392,34 @@ inline void cell_phy_t::from(CELLx* cell, net_t* nets) {
     }
 }
 
+inline void bin_t::from(BIN* bin) {
+    max.from(bin->pmax);
+    min.from(bin->pmin);
+    field.from(bin->e);
+    cellArea = bin->cell_area;
+    fillerArea = bin->cell_area2;
+    potential = bin->phi;
+}
+inline void bin_t::to(BIN* bin) {
+    bin->pmax.from(max);
+    bin->pmin.from(min);
+    bin->e.from(field);
+    bin->cell_area = cellArea;
+    bin->cell_area2 = fillerArea;
+    bin->phi = potential;
+}
+inline void area_t::from(BIN* bin) {
+    virtArea = bin->virt_area;
+    terminArea = bin->term_area;
+    binDensity = bin->den;
+    fillerDensity = bin->den2;
+    coord.set(bin->p.x, bin->p.y);
+}
+inline void area_t::to(BIN* bin) {
+    bin->den = binDensity;
+    bin->den2 = fillerDensity;
+    bin->p.from(coord);
+}
 
 /*inline void NET::from(net_t net) {
         min_x = net.min.x;

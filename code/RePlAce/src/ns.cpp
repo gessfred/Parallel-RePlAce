@@ -59,7 +59,7 @@
 #include "opt.h"
 #include "plot.h"
 #include "wlen.h"
-
+#include "parallel.hpp"
 static int backtrack_cnt = 0;
 
 void myNesterov::nesterov_opt() {
@@ -411,128 +411,8 @@ void myNesterov::InitializationIter() {
     it->grad = get_norm(y_dst, N, 2.0);
 }
 
-//area share of a cell
-void __areaShare__(cell_den_t* cells, bin_t* bins, FPOS* grad, int i) {
-        grad->SetZero();
-    cell_den_t cell = cells[i];
-    POS b0, b1;
-    
-    TIER *tier = &tier_st[0];
 
-    b0.x = cell.binStart.x;
-    b0.y = cell.binStart.y;
-    b1.x = cell.binEnd.x;
-    b1.y = cell.binEnd.y;
 
-    bin_t *bpx = NULL, *bpy = NULL;
-    int x = 0, y = 0;
-    int idx = b0.x * tier->dim_bin.y + b0.y;
-
-    for(x = b0.x, bpx = &bins[idx]; x <= b1.x; x++, bpx += tier->dim_bin.y) {
-
-        prec max_x = min(bpx->pmax.x, cell.max.x);
-        prec min_x = max(bpx->pmin.x, cell.min.x);
-
-        for(y = b0.y, bpy = bpx; y <= b1.y; y++, bpy++) {
-            prec max_y = min(bpy->pmax.y, cell.max.y);
-            prec min_y = max(bpy->pmin.y, cell.min.y);
-            prec area_share = (max_x - min_x) * (max_y - min_y) * cell.scale;
-            grad->x += area_share * bpy->e.x;
-            grad->y += area_share * bpy->e.y;
-        }
-    }
-}
-//filler=true
-void __FILLgradient__(FPOS *dst, FPOS *wdst,
-                          FPOS *pdst, FPOS *pdstl, int N,
-                          prec *cellLambdaArr, bool onlyPreCon, bin_t* bins, cell_phy_t* ios, net_t* nets, double* time, cell_den_t* cels) {
-    time_start(time);
-    struct FPOS wgrad, pgrad, pgradl, wpre, charge_dpre, pre;
-    #pragma omp parallel for num_threads(numThread)
-    for(int i = moduleCNT; i < N; i++) {
-        if(cels[i].type != FillerCell) continue;
-        if(STAGE == cGP2D) {
-            if(constraintDrivenCMD == false) __areaShare__(cels, bins, &pgrad, i);
-        }
-        wdst[i].SetZero();
-        pdst[i] = pgrad;
-        dst[i].x = opt_phi_cof * pgrad.x;
-        dst[i].y = opt_phi_cof * pgrad.y;
-    }
-    for(int i = moduleCNT; i < N; i++) {
-        potn_pre(i, &charge_dpre);
-        if(onlyPreCon) pre = charge_dpre;
-        else { //?
-          pre.x = opt_phi_cof * charge_dpre.x;
-          pre.y = opt_phi_cof * charge_dpre.y;
-        }
-        if(pre.x < MIN_PRE) pre.x = MIN_PRE;
-        if(pre.y < MIN_PRE) pre.y = MIN_PRE;
-        dst[i].x /= pre.x;
-        dst[i].y /= pre.y;
-    }
-    time_end(time);
-}
-
-/**
- * W1, W2: 
- * 
- * 
- * 
- * 
- * */
-void __gradient__(FPOS *dst, FPOS *wdst,
-                          FPOS *pdst, FPOS *pdstl, int N,
-                          prec *cellLambdaArr, bool onlyPreCon, bin_t* bins, cell_phy_t* ios, net_t* nets, double* time, size_t* W1, cell_den_t* cels) {
-    struct FPOS wpre, charge_dpre, pre;
-    auto t0 = std::chrono::steady_clock::now();
-    #pragma omp parallel num_threads(numThread)
-    {
-        int tid = omp_get_thread_num();
-        int start = ((tid >= 1) ? W1[tid-1] : 0);
-        int end = (tid < numThread-1) ? W1[tid] : N;
-        for(int i = start; i < end; ++i) {
-            FPOS wgrad;
-            if(STAGE == cGP2D && cels[i].type == Macro) wgrad.SetZero();
-            else __wlen_grad__(&ios[i], nets, &wgrad);
-            wdst[i] = wgrad;
-            dst[i].x = wgrad.x;
-            dst[i].y = wgrad.y;
-        }
-    }
-    profile.wgrad += time_since(t0);
-    time_start(time);
-    t0 = std::chrono::steady_clock::now();
-    #pragma omp parallel for num_threads(numThread)
-    for(int i = 0; i < N; i++) {
-        FPOS pgrad;
-        if(STAGE == cGP2D) { //look to delete this test
-            if(cels[i].type == Macro) pgrad.SetZero();
-            else __areaShare__(cels, bins, &pgrad, i);
-        }
-        pdst[i] = pgrad;
-        dst[i].x += opt_phi_cof * pgrad.x;
-        dst[i].y += opt_phi_cof * pgrad.y;
-    }
-    profile.pgrad += time_since(t0);
-    time_end(time);
-    t0 = std::chrono::steady_clock::now();
-    for(int i = 0; i < N; i++) {
-        cellLambdaArr[i] *= dampParam;
-        wlen_pre(i, &wpre);
-        potn_pre(i, &charge_dpre);
-        if(onlyPreCon) pre = charge_dpre;
-        else { //?
-          pre.x = wpre.x + opt_phi_cof * charge_dpre.x;
-          pre.y = wpre.y + opt_phi_cof * charge_dpre.y;
-        }
-        if(pre.x < MIN_PRE) pre.x = MIN_PRE;
-        if(pre.y < MIN_PRE) pre.y = MIN_PRE;
-        dst[i].x /= pre.x;
-        dst[i].y /= pre.y;
-    }
-    profile.pre += time_since(t0);
-}
 void myNesterov::__post_filler__(int i, cell_den_t* cells, bin_t* bins, cell_phy_t* ios, net_t* mesh) {
         FILLER_PLACE = 0;
         if((isFirst_gp_opt == false) && post_filler == 0) {
@@ -589,8 +469,8 @@ int myNesterov::__optimize__() {
         localA2[j] = (float*)aligned_alloc(64, sizeof(float)*tier->tot_bin_cnt);
     }
     dCells.copy(gcell_st);
-    CellBox(&dCells);
-    size_t* bound = (size_t*)schedule(refCells(&dCells), numThread);
+    //CellBox(&dCells);
+    
             
     for(int k = 0; k < tier->tot_bin_cnt; ++k) {
         bins[k].from(&tier->bin_mat[k]);
@@ -603,6 +483,8 @@ int myNesterov::__optimize__() {
     for(int k=0; k < tier->cell_cnt; ++k) {
         cells[k].from(&gcell_st[k]);
     }  
+    update_cells_frame(cells);
+    size_t* bound = (size_t*)schedule(refCells(cells, tier->cell_cnt), numThread);
     for(int i = 0; i < N; i++) {
         CELLx* cell = &gcell_st[i];
         cell_phy_t* cpy = &ios[i];
@@ -614,7 +496,14 @@ int myNesterov::__optimize__() {
             cpy->pinArrayPtr[k] = &mesh[p->netID].pinArray[p->pinIDinNet];
         }
     }
-	cout << "scheduling..." << endl;
+    circuit_t circuit = { .nets = mesh, .rects = cells, .cells = ios };
+    param_t params;
+    params.wlen_cof.x = wlen_cof.x;
+    params.wlen_cof.y = wlen_cof.y;
+    params.NEG_MAX_EXP = NEG_MAX_EXP;
+    cout << params.NEG_MAX_EXP << ", " << params.wlen_cof.x << ", " << params.wlen_cof.y << endl;
+
+    circuit.params = &params;
 	size_t* cellPinWk = schedule(refIo(ios, N), numThread);
 	size_t* netPinWk = schedule(refNets(mesh, netCNT), numThread);
     for(i = 0; i < max_iter; i++) {
@@ -670,20 +559,20 @@ int myNesterov::__optimize__() {
                 y0_st[j] = valid_coor00(v, half_densize);
             }
             auto t0 = std::chrono::steady_clock::now();
-            __wirelength__(mesh, cells, y0_st, pof, netPinWk, &it->wlcost);
+            circuit.params->wlen_cof.x = wlen_cof.x;
+            circuit.params->wlen_cof.y = wlen_cof.y;
+            __wirelength__(&circuit, y0_st, pof, netPinWk, &it->wlcost);
             profile.wlen += time_since(t0);
             for(int i = 0; i < tier->tot_bin_cnt; i++) {
                 bin_t* bp = &bins[i];
-                bp->cell_area = 0;
-                bp->cell_area2 = 0;
+                bp->cellArea = 0;
+                bp->fillerArea = 0;
             }
             __bin_update7_cGP2D(cells, bins, areas, localA, localA2, bound, &profile.density, &profile.fft);
             t0 = std::chrono::steady_clock::now();
-
             if(FILLER_PLACE) __FILLgradient__(y0_dst, y0_wdst, y0_pdst, y0_pdstl, N, cellLambdaArr, DEN_ONLY_PRECON, bins, ios, mesh, &it->gradcost, cells);
             else __gradient__(y0_dst, y0_wdst, y0_pdst, y0_pdstl, N, cellLambdaArr, DEN_ONLY_PRECON, bins, ios, mesh, &it->gradcost, cellPinWk, cells);   
             profile.cost += time_since(t0);
-
             get_lc(y_st, y_dst, y0_st, y0_dst, &it0, N);
 
             

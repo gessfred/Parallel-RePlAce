@@ -1068,104 +1068,10 @@ void bin_update7_mGP2D() {
     gsum_ovfl = gsum_ovf_area / total_modu_area;
 }
 
-// 2D cGP2D
-void __bin_update7_cGP2D(cell_den_t* cells, bin_t* bins, area_t* areas, float** localAr, float** localAr2, size_t* bound, double* time, double* time2) {
-    gsum_ovf_area = 0;
-    gsum_phi = 0;
-    TIER* tier = &tier_st[0];
-    const POS dim = tier->dim_bin;
-    auto start = std::chrono::steady_clock::now();
-    #pragma omp parallel num_threads(numThread) 
-    {
-        int tid = omp_get_thread_num();
-        memset(localAr[tid], 0.0, tier->tot_bin_cnt*sizeof(float));
-        memset(localAr2[tid], 0.0, tier->tot_bin_cnt*sizeof(float));
-    }
-    //#pragma omp parallel num_threads(numThread)
-    {
-        //int start = ((tid >= 1) ? bound[tid-1] : 0);
-        //int end = (tid < numThread-1) ? bound[tid] : tier->cell_cnt;
-        #pragma omp parallel for num_threads(numThread)
-	for(int p = 0 ; p < tier->cell_cnt; ++p) {
-	    int tid = omp_get_thread_num(); 
-            cell_den_t* cell = &cells[p];
-            pos_t b0, b1;
-            fpos2_t den_pmin = cell->min, den_pmax = cell->max;
-            b0.x = INT_DOWN((den_pmin.x - tier->bin_org.x) * tier->inv_bin_stp.x);
-            b0.y = INT_DOWN((den_pmin.y - tier->bin_org.y) * tier->inv_bin_stp.y);
-            b1.x = INT_DOWN((den_pmax.x - tier->bin_org.x) * tier->inv_bin_stp.x);
-            b1.y = INT_DOWN((den_pmax.y - tier->bin_org.y) * tier->inv_bin_stp.y);
-            if(b0.x < 0) b0.x = 0;
-            if(b0.x > tier->dim_bin.x - 1) b0.x = tier->dim_bin.x - 1;
-            if(b0.y < 0) b0.y = 0;
-            if(b0.y > tier->dim_bin.y - 1) b0.y = tier->dim_bin.y - 1;
-            if(b1.x < 0)  b1.x = 0;
-            if(b1.x > tier->dim_bin.x - 1) b1.x = tier->dim_bin.x - 1;
-            if(b1.y < 0) b1.y = 0;
-            if(b1.y > tier->dim_bin.y - 1) b1.y = tier->dim_bin.y - 1;
-            cell->binStart = b0;
-            cell->binEnd = b1;
-            int idx = b0.x * tier->dim_bin.y + b0.y;
-
-            int x = 0, y = 0;
-            
-            bin_t *bpx = NULL, *bpy = NULL;
-            for(x = b0.x, bpx = &bins[idx]; x <= b1.x; x++, bpx += tier->dim_bin.y) {
-                idx = x * dim.y + b0.y;
-                prec max_x = min(bpx->pmax.x, den_pmax.x);
-                prec min_x = max(bpx->pmin.x, den_pmin.x);
-                for(y = b0.y, bpy = bpx; y <= b1.y; y++, bpy++, idx++) {
-                    prec max_y = min(bpy->pmax.y, den_pmax.y);
-                    prec min_y = max(bpy->pmin.y, den_pmin.y);
-                    prec area_share = (max_x - min_x) * (max_y - min_y) * cell->scale;
-                    switch(cell->type) {
-                        case FillerCell: localAr2[tid][idx] += area_share; break;
-                        case Macro: localAr[tid][idx] += area_share; break;
-                        default: localAr[tid][idx] += area_share; break;                    
-                    }
-                }
-            }
-        }
-    }
-    #pragma omp parallel for num_threads(numThread)
-    for(int k = 0; k < tier->tot_bin_cnt; ++k) {
-        for(int i = 0; i < numThread; ++i) {
-            bins[k].cell_area += localAr[i][k];
-        }
-        for(int i = 0; i < numThread; ++i) {
-            bins[k].cell_area2 += localAr2[i][k];
-        }
-    }
-    *time += time_since(start);
-    for(int i = 0; i < tier->tot_bin_cnt; i++) {
-        bin_t* bp = &bins[i];
-        area_t* a = &areas[i];
-        prec area_num2 = bp->cell_area + a->virt_area + a->term_area;
-        prec area_num = area_num2 + bp->cell_area2;
-        a->den = area_num * tier->inv_bin_area;
-        a->den2 = area_num2 * tier->inv_bin_area;
-        __copy_den_to_fft_2D__(a->den, a->p);
-    }
-    charge_fft_call(0);
-    prec sum_ovf_area = 0;
-    for(int i = 0; i < tier->tot_bin_cnt; i++) {
-        bin_t* bp = &bins[i];
-        area_t* a = &areas[i];    
-        __copy_e_from_fft_2D__(&(bp->e), a->p);
-        __copy_phi_from_fft_2D__(&(bp->phi), a->p);
-        gsum_phi += bp->phi * (bp->cell_area + bp->cell_area2 + a->term_area + a->virt_area);
-        sum_ovf_area += max((prec)0.0, a->den2 - target_cell_den) * tier->bin_area;
-    }
-    
-    tier->sum_ovf = sum_ovf_area / tier->modu_area;
-    gsum_ovf_area += sum_ovf_area;
-    gsum_ovfl = gsum_ovf_area / total_modu_area;
-    *time2 += time_since(start);
-}
 
 
 // 2D cGP2D
-
+/*
 void CellBox(Cell_t* cells) {
     TIER* tier = &tier_st[0];
     FPOS bin_org = tier->bin_org, stp = tier->inv_bin_stp;
@@ -1266,8 +1172,7 @@ void FFTSolve(bin_t* bins, area_t* areas) {
     gsum_ovf_area += sum_ovf_area;
     gsum_ovfl = gsum_ovf_area / total_modu_area;
 }
-
-
+*/
 
 // 2D cGP2D
 void bin_update7_cGP2D(double* time0, double* time1) {

@@ -14,9 +14,9 @@ vector<int> refNets(net_t* nets, size_t numberOfNets) {
     return cellsRefs;
 }
 
-vector<int> refCells(Cell_t* cells) {
+vector<int> refCells(cell_den_t* cells, size_t numberOfCells) {
     vector<int> cellsRefs;
-    for(size_t i = 0; i < cells->size; ++i) 
-        cellsRefs.push_back((cells->b1_x[i]-cells->b0_x[i])*(cells->b1_y[i]-cells->b0_y[i]));
+    for(size_t i = 0; i < numberOfCells; ++i) 
+        cellsRefs.push_back((cells[i].binEnd.y-cells[i].binStart.y)*(cells[i].binEnd.x-cells[i].binStart.x));
     return cellsRefs;
 }

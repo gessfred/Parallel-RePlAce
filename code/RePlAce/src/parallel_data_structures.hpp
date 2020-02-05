@@ -19,6 +19,11 @@ struct POS;
 struct CELLx;
 struct PIN;
 struct NET;
+struct BIN;
+
+/*
+
+*/
 struct pos_t {
     public:
     int x;
@@ -168,9 +173,47 @@ struct Cell_t {
     }
 };
 
+struct param_t {
+    fpos2_t wlen_cof;
+    double NEG_MAX_EXP;
+    double MIN_PRE;
+    double opt_phi_cof;
+    double dampParam;
+    fpos2_t gp_wlen_weight;
+};
+
+struct circuit_t {
+    net_t* nets;
+    cell_den_t* rects; // cell rectangles
+    cell_phy_t* cells;
+    param_t* params;
+};
+struct bin_t {
+    fpos2_t max;
+    fpos2_t min;
+    fpos2_t field;
+    float cellArea;
+    float fillerArea;
+    float potential;
+    inline void from(BIN* bin);
+    inline void to(BIN* bin);
+};
+//bins as a collection of area data
+struct area_t {
+    float virtArea;
+    long terminArea;
+    float binDensity;
+    float fillerDensity;
+    pos_t coord;
+    inline void from(BIN* bin);
+    inline void to(BIN* bin);
+};
+
+
 vector<int> refIo(cell_phy_t* cells, size_t numberOfCells);
 vector<int> refNets(net_t* nets, size_t numberOfNets);
-vector<int> refCells(Cell_t* cells);
+vector<int> refCells(cell_den_t* cells, size_t numberOfCells);
+
 inline size_t* schedule(vector<int> data, unsigned int numberOfThreads) {
 	size_t tid=0;
 	float work=0, workUpTo= 0;

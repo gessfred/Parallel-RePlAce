@@ -68,63 +68,7 @@ extern POS max_bin;
 
 //extern POS *bin_st;
 
-struct BIN {
-    FPOS e;
-    ////igkang
-    //  FPOS    e_local;
-    POS p;
-    FPOS pmin;
-    FPOS pmax;
-    FPOS center;
-    prec cell_area;
-    prec cell_area2;
 
-    prec virt_area;
-    long term_area; // mgwoo
-
-    prec filler_area;
-    prec phi;
-    int flg;
-    prec pl_area;
-    prec macro_area;
-    prec macro_area2;
-    prec den;
-    prec den2;
-    prec no_mac_den;
-    void dump(string a) {
-        cout << a << endl;
-        e.Dump("e");
-        p.Dump("p");
-        pmin.Dump("pmin");
-        pmax.Dump("pmax");
-        center.Dump("center");
-        cout << endl;
-    }
-};
-struct bin_t {
-    fpos2_t pmax;
-    fpos2_t pmin;
-    fpos2_t e;
-    prec cell_area;
-    prec cell_area2;
-    prec phi;
-    inline void from(BIN* bin) {
-        pmax.from(bin->pmax);
-        pmin.from(bin->pmin);
-        e.from(bin->e);
-        cell_area = bin->cell_area;
-        cell_area2 = bin->cell_area2;
-        phi = bin->phi;
-    }
-    inline void to(BIN* bin) {
-        bin->pmax.from(pmax);
-        bin->pmin.from(pmin);
-        bin->e.from(e);
-        bin->cell_area = cell_area;
-        bin->cell_area2 = cell_area2;
-        bin->phi = phi;
-    }
-};
 
 struct Bin_t {
     float* pmax_x;
@@ -151,7 +95,7 @@ struct Bin_t {
         size = N;
     }
 
-    inline void copy(bin_t* bins) {
+    /*inline void copy(bin_t* bins) {
         for(int i = 0; i < size; ++i) {
             pmax_x[i] = bins[i].pmax.x;
             pmax_y[i] = bins[i].pmax.y;
@@ -177,7 +121,7 @@ struct Bin_t {
             bins[i].cell_area2 = cell_area2[i];
             bins[i].phi = phi[i];
         }
-    }
+    }*/
 
     inline void destroy() {
         free(pmax_x);
@@ -193,30 +137,6 @@ struct Bin_t {
     }
 };
 
-
-//bins as a collection of area data
-struct area_t {
-    prec virt_area;
-    long term_area;
-    prec den;
-    prec den2;
-    pos_t p;
-    inline void from(BIN* bin) {
-        virt_area = bin->virt_area;
-        term_area = bin->term_area;
-        den = bin->den;
-        den2 = bin->den2;
-        p.set(bin->p.x, bin->p.y);
-    }
-    inline void to(BIN* bin) {
-        bin->den = den;
-        bin->den2 =den2;
-        bin->p.from(p);
-    }
-};
-
-
-
 int idx_in_bin_rect(POS *p, POS pmin, POS pmax);
 
 void bin_init();
@@ -229,7 +149,6 @@ void bin_update7(int N);
 void bin_update7_cGP2D(double* time0, double* time1);
 void Density(Cell_t* cells, Bin_t* bins, int* bound, float** localAr, float** localAr2);
 void __density__(Cell_t* cells, Bin_t* bins, TIER *tier);
-void __bin_update7_cGP2D(cell_den_t* cells, bin_t* bins, area_t* areas, float** localAr, float** localAr2, size_t* bound, double* time, double* time2);
 void CellBox(Cell_t* cells);
 void FFTSolve(bin_t* bins, area_t* areas);
 void bin_update7_mGP2D();

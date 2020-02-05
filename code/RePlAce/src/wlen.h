@@ -151,9 +151,8 @@ void net_update_init(void);
 void net_update( FPOS *st);
 void net_update_lse( FPOS *st);
 void net_update_wa( FPOS *st);
-void __net_update_wa(FPOS *st, double* time);
-void __wirelength__(net_t* nets, cell_den_t* cells, FPOS *st, fpos2_t** poff, size_t* wrk_ld, double* time);//, cell_t* cells);
-void __dwlen__(fpos2_t obj, net_t *net, pin_t *pin, fpos2_t *grad) ;
+void __wlen_grad__(cell_phy_t* cell, net_t* nets, FPOS *grad);
+void __dwlen__(fpos2_t obj, net_t *net, pin_t *pin, fpos2_t *grad);
 
 prec GetHpwl();
 prec UpdateNetAndGetHpwl();

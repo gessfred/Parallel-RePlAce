@@ -456,3 +456,38 @@ struct NET {
     //inline void from(net_t net);
     inline void copy(net_t* net);
 };
+
+struct BIN {
+    FPOS e;
+    ////igkang
+    //  FPOS    e_local;
+    POS p;
+    FPOS pmin;
+    FPOS pmax;
+    FPOS center;
+    prec cell_area;
+    prec cell_area2;
+
+    prec virt_area;
+    long term_area; // mgwoo
+
+    prec filler_area;
+    prec phi;
+    int flg;
+    prec pl_area;
+    prec macro_area;
+    prec macro_area2;
+    prec den;
+    prec den2;
+    prec no_mac_den;
+    void dump(string a) {
+        cout << a << endl;
+        e.Dump("e");
+        p.Dump("p");
+        pmin.Dump("pmin");
+        pmax.Dump("pmax");
+        center.Dump("center");
+        cout << endl;
+    }
+};
+
