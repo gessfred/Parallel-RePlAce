@@ -1,10 +1,8 @@
 #include "parallel.hpp"
 
-void __wirelength__(circuit_t* circuit, FPOS *st, fpos2_t** poff, size_t* wrk_ld, double* time) {
+void update_wirelength(circuit_t* circuit, FPOS *st, fpos2_t** poff, size_t* wrk_ld, double* time) {
     net_t* nets = circuit->nets;
     cell_den_t* cells = circuit->rects;
-    const double NEG_MAX_EXP = circuit->params->NEG_MAX_EXP;
-    fpos2_t wlen_cof = circuit->params->wlen_cof;
     for(int b = 0; b < gcell_cnt; b++) {
         CELL* cell = &gcell_st[b];
         cell->center = st[b];
@@ -104,7 +102,7 @@ void __wirelength__(circuit_t* circuit, FPOS *st, fpos2_t** poff, size_t* wrk_ld
 }
 
 //area share of a cell
-void __areaShare__(cell_den_t* cells, bin_t* bins, FPOS* grad, int i) {
+void put_potential_gradient(cell_den_t* cells, bin_t* bins, FPOS* grad, int i) {
         grad->SetZero();
     cell_den_t cell = cells[i];
     POS b0, b1;
@@ -135,7 +133,7 @@ void __areaShare__(cell_den_t* cells, bin_t* bins, FPOS* grad, int i) {
     }
 }
 
-void __dwlen__(fpos2_t obj, net_t *net, pin_t *pin, fpos2_t *grad) {
+void get_wirelength_grad(fpos2_t obj, net_t *net, pin_t *pin, fpos2_t *grad) {
     fpos2_t grad_sum_num1 , grad_sum_num2;
     fpos2_t grad_sum_denom1 , grad_sum_denom2;
     fpos2_t grad1 = {0, 0};
@@ -182,7 +180,7 @@ void __dwlen__(fpos2_t obj, net_t *net, pin_t *pin, fpos2_t *grad) {
     grad->y = grad1.y - grad2.y;
 }
 
-void __wlen_grad__(cell_phy_t* cell, net_t* nets, FPOS *grad) {
+void put_wirelength_grad(cell_phy_t* cell, net_t* nets, FPOS *grad) {
     fpos2_t net_grad;
 
     grad->SetZero();
@@ -191,7 +189,7 @@ void __wlen_grad__(cell_phy_t* cell, net_t* nets, FPOS *grad) {
         net_t* net = &nets[pin->netID];
         if(net->pinCNT <= 1)
             continue;
-        __dwlen__(pin->coord, net, pin, &net_grad);
+        get_wirelength_grad(pin->coord, net, pin, &net_grad);
         grad->x += net_grad.x;
         grad->y += net_grad.y;
     }
@@ -200,7 +198,7 @@ void __wlen_grad__(cell_phy_t* cell, net_t* nets, FPOS *grad) {
 }
 
 //filler=true
-void __FILLgradient__(FPOS *dst, FPOS *wdst,
+void update_fill_gradient(FPOS *dst, FPOS *wdst,
                           FPOS *pdst, FPOS *pdstl, int N,
                           prec *cellLambdaArr, bool onlyPreCon, bin_t* bins, cell_phy_t* ios, net_t* nets, double* time, cell_den_t* cels) {
     time_start(time);
@@ -209,7 +207,7 @@ void __FILLgradient__(FPOS *dst, FPOS *wdst,
     for(int i = moduleCNT; i < N; i++) {
         if(cels[i].type != FillerCell) continue;
         if(STAGE == cGP2D) {
-            if(constraintDrivenCMD == false) __areaShare__(cels, bins, &pgrad, i);
+            if(constraintDrivenCMD == false) put_potential_gradient(cels, bins, &pgrad, i);
         }
         wdst[i].SetZero();
         pdst[i] = pgrad;
@@ -232,7 +230,7 @@ void __FILLgradient__(FPOS *dst, FPOS *wdst,
 }
 
 
-void __gradient__(FPOS *dst, FPOS *wdst,
+void update_gradient(FPOS *dst, FPOS *wdst,
                           FPOS *pdst, FPOS *pdstl, int N,
                           prec *cellLambdaArr, bool onlyPreCon, bin_t* bins, cell_phy_t* ios, net_t* nets, double* time, size_t* W1, cell_den_t* cels) {
     //double dampParam = circuit->params->dampParam;
@@ -248,7 +246,7 @@ void __gradient__(FPOS *dst, FPOS *wdst,
         for(int i = start; i < end; ++i) {
             FPOS wgrad;
             if(STAGE == cGP2D && cels[i].type == Macro) wgrad.SetZero();
-            else __wlen_grad__(&ios[i], nets, &wgrad);
+            else put_wirelength_grad(&ios[i], nets, &wgrad);
             wdst[i] = wgrad;
             dst[i].x = wgrad.x;
             dst[i].y = wgrad.y;
@@ -262,7 +260,7 @@ void __gradient__(FPOS *dst, FPOS *wdst,
         FPOS pgrad;
         if(STAGE == cGP2D) { //look to delete this test
             if(cels[i].type == Macro) pgrad.SetZero();
-            else __areaShare__(cels, bins, &pgrad, i);
+            else put_potential_gradient(cels, bins, &pgrad, i);
         }
         pdst[i] = pgrad;
         dst[i].x += opt_phi_cof * pgrad.x;
@@ -292,7 +290,7 @@ void update_cells_frame(cell_den_t* cells) {
     TIER* tier = &tier_st[0];
     for( int i = 0; i < tier->cell_cnt; ++i ) {
         cell_den_t* cell = &cells[i];
-        pos_t b0, b1;
+        pos2_t b0, b1;
         fpos2_t den_pmin = cell->min, den_pmax = cell->max;
         b0.x = INT_DOWN((den_pmin.x - tier->bin_org.x) * tier->inv_bin_stp.x);
         b0.y = INT_DOWN((den_pmin.y - tier->bin_org.y) * tier->inv_bin_stp.y);
@@ -314,7 +312,7 @@ void update_cells_frame(cell_den_t* cells) {
 //MIN_PRE, opt_phi_cof, dampParam
 
 // 2D cGP2D
-void __bin_update7_cGP2D(cell_den_t* cells, bin_t* bins, area_t* areas, float** localAr, float** localAr2, size_t* bound, double* time, double* time2) {
+void update_field_potential(cell_den_t* cells, bin_t* bins, area_t* areas, float** localAr, float** localAr2, size_t* bound, double* time, double* time2) {
     gsum_ovf_area = 0;
     gsum_phi = 0;
     TIER* tier = &tier_st[0];
@@ -334,7 +332,7 @@ void __bin_update7_cGP2D(cell_den_t* cells, bin_t* bins, area_t* areas, float** 
 	for(int p = 0 ; p < tier->cell_cnt; ++p) {
 	    int tid = omp_get_thread_num(); 
             cell_den_t* cell = &cells[p];
-            pos_t b0, b1;
+            pos2_t b0, b1;
             fpos2_t den_pmin = cell->min, den_pmax = cell->max;
             b0.x = INT_DOWN((den_pmin.x - tier->bin_org.x) * tier->inv_bin_stp.x);
             b0.y = INT_DOWN((den_pmin.y - tier->bin_org.y) * tier->inv_bin_stp.y);

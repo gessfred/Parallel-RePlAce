@@ -454,8 +454,6 @@ int myNesterov::__optimize__() {
     bin_t* bins = (bin_t*)calloc(sizeof(bin_t), tier->tot_bin_cnt);
     area_t* areas = (area_t*)calloc(sizeof(area_t), tier->tot_bin_cnt);
     cell_den_t* cells = (cell_den_t*)calloc(sizeof(cell_den_t), N);
-    Cell_t dCells;
-    dCells.build(N);
     cell_phy_t* ios = (cell_phy_t*)calloc(sizeof(cell_phy_t), N);
     for(int k = 0; k < netCNT; ++k) {
         mesh[k].from(&netInstance[k]);
@@ -468,9 +466,6 @@ int myNesterov::__optimize__() {
     for(int j = 0; j < numThread; ++j) {
         localA2[j] = (float*)aligned_alloc(64, sizeof(float)*tier->tot_bin_cnt);
     }
-    dCells.copy(gcell_st);
-    //CellBox(&dCells);
-    
             
     for(int k = 0; k < tier->tot_bin_cnt; ++k) {
         bins[k].from(&tier->bin_mat[k]);
@@ -497,13 +492,6 @@ int myNesterov::__optimize__() {
         }
     }
     circuit_t circuit = { .nets = mesh, .rects = cells, .cells = ios };
-    param_t params;
-    params.wlen_cof.x = wlen_cof.x;
-    params.wlen_cof.y = wlen_cof.y;
-    params.NEG_MAX_EXP = NEG_MAX_EXP;
-    cout << params.NEG_MAX_EXP << ", " << params.wlen_cof.x << ", " << params.wlen_cof.y << endl;
-
-    circuit.params = &params;
 	size_t* cellPinWk = schedule(refIo(ios, N), numThread);
 	size_t* netPinWk = schedule(refNets(mesh, netCNT), numThread);
     for(i = 0; i < max_iter; i++) {
@@ -559,19 +547,17 @@ int myNesterov::__optimize__() {
                 y0_st[j] = valid_coor00(v, half_densize);
             }
             auto t0 = std::chrono::steady_clock::now();
-            circuit.params->wlen_cof.x = wlen_cof.x;
-            circuit.params->wlen_cof.y = wlen_cof.y;
-            __wirelength__(&circuit, y0_st, pof, netPinWk, &it->wlcost);
+            update_wirelength(&circuit, y0_st, pof, netPinWk, &it->wlcost);
             profile.wlen += time_since(t0);
             for(int i = 0; i < tier->tot_bin_cnt; i++) {
                 bin_t* bp = &bins[i];
                 bp->cellArea = 0;
                 bp->fillerArea = 0;
             }
-            __bin_update7_cGP2D(cells, bins, areas, localA, localA2, bound, &profile.density, &profile.fft);
+            update_field_potential(cells, bins, areas, localA, localA2, bound, &profile.density, &profile.fft);
             t0 = std::chrono::steady_clock::now();
-            if(FILLER_PLACE) __FILLgradient__(y0_dst, y0_wdst, y0_pdst, y0_pdstl, N, cellLambdaArr, DEN_ONLY_PRECON, bins, ios, mesh, &it->gradcost, cells);
-            else __gradient__(y0_dst, y0_wdst, y0_pdst, y0_pdstl, N, cellLambdaArr, DEN_ONLY_PRECON, bins, ios, mesh, &it->gradcost, cellPinWk, cells);   
+            if(FILLER_PLACE) update_fill_gradient(y0_dst, y0_wdst, y0_pdst, y0_pdstl, N, cellLambdaArr, DEN_ONLY_PRECON, bins, ios, mesh, &it->gradcost, cells);
+            else update_gradient(y0_dst, y0_wdst, y0_pdst, y0_pdstl, N, cellLambdaArr, DEN_ONLY_PRECON, bins, ios, mesh, &it->gradcost, cellPinWk, cells);   
             profile.cost += time_since(t0);
             get_lc(y_st, y_dst, y0_st, y0_dst, &it0, N);
 
@@ -656,7 +642,6 @@ int myNesterov::__optimize__() {
     for(int k = 0; k < tier->tot_bin_cnt; ++k) {
         bins[k].to(&tier->bin_mat[k]);
     }
-    dCells.destroy();
     for(int j = 0; j < numThread; ++j) {
         free(localA[j]);
     }
@@ -1178,6 +1163,7 @@ void myNesterov::__UpdateNesterovIter__(net_t* nets, int iter, struct ITER *it, 
     PrintNesterovOptStatus(iter);
     fflush(stdout);
 }
+
 /*void __lipschitz__(fpos2_t *y_st, fpos2_t *y_dst, fpos2_t *z_st,
              fpos2_t *z_dst, struct ITER *iter, int N) {
     prec yz_dis = 0;
@@ -1191,6 +1177,7 @@ void myNesterov::__UpdateNesterovIter__(net_t* nets, int iter, struct ITER *it, 
     iter->lc = lc;
     iter->alpha00 = alpha;
 }*/
+
 void get_lc(struct FPOS *y_st, struct FPOS *y_dst, struct FPOS *z_st,
             struct FPOS *z_dst, struct ITER *iter, int N) {
     if(FILLER_PLACE)

@@ -135,7 +135,7 @@ inline void copy_e_from_fft_2D (FPOS *e, struct POS p) {
     e->x = ex_2d_st2[p.x][p.y];
     e->y = ey_2d_st2[p.x][p.y];
 }
-inline void __copy_e_from_fft_2D__(fpos2_t *e, pos_t p) {
+inline void __copy_e_from_fft_2D__(fpos2_t *e, pos2_t p) {
     e->x = ex_2d_st2[p.x][p.y];
     e->y = ey_2d_st2[p.x][p.y];
 }
@@ -147,7 +147,7 @@ inline void copy_e_from_fft_3D (struct FPOS *e, struct POS p) {
 inline void copy_phi_from_fft_2D (prec   *phi, struct POS p) {
     *phi = phi_2d_st2[p.x][p.y];
 }
-inline void __copy_phi_from_fft_2D__(prec   *phi, pos_t p) {
+inline void __copy_phi_from_fft_2D__(prec   *phi, pos2_t p) {
     *phi = phi_2d_st2[p.x][p.y];
 }
 inline void copy_phi_from_fft_3D (prec   *phi, struct POS p) {
@@ -156,7 +156,7 @@ inline void copy_phi_from_fft_3D (prec   *phi, struct POS p) {
 inline void copy_den_to_fft_2D (prec   den, struct POS p) {
     den_2d_st2[p.x][p.y] = den;
 }
-inline void __copy_den_to_fft_2D__(prec   den, pos_t p) {
+inline void __copy_den_to_fft_2D__(prec   den, pos2_t p) {
     den_2d_st2[p.x][p.y] = den;
 }
 inline void copy_den_to_fft_3D (prec   den, struct POS p) {

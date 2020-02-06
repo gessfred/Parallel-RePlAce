@@ -131,8 +131,6 @@ typedef double prec;
 #define GP_SCAL /* 1000.0 */ /* 1.0 */ /* 0.001 */ 0.0002
 #define DEN_GRAD_SCALE 1.0 /* 0.1 */ /* 0.5 */ /* 0.25 */ /* 0.125 */
 #define LAYER_ASSIGN_3DIC MIN_TIER_ORDER                  /* MAX_AREA_DIS_DIV */
-//#define lower(x, tier) cell->b0.x = INT_CONVERT((cell->den_pmin.x - tier->bin_org.x) * tier->inv_bin_stp.x); cell->b0.Legalize((pos_t){0, 0}, (pos_t){tier->dim_bin.x, tier->dim_bin.y})
-//#define upper(x, tier) cell->b1.x = INT_CONVERT((cell->den_pmax.x - tier->bin_org.x) * tier->inv_bin_stp.x); cell->b1.Legalize((pos_t){0, 0}, (pos_t){tier->dim_bin.x, tier->dim_bin.y})
 
 #define time_since(start)  (std::chrono::duration<double>(std::chrono::steady_clock::now()-start)).count(); start = std::chrono::steady_clock::now()
 ///////////////////////////////////////////////////////////////////////////
@@ -160,7 +158,7 @@ struct PIN;
 struct CELLx;
 
 struct pin_t;
-struct pos_t;
+struct pos2_t;
 //struct net_t;
 struct fpos2_t;
 struct net_t;
@@ -170,7 +168,7 @@ inline void FPOS::from(fpos2_t fp) {
         y = fp.y;
 }
 
-inline void POS::from(pos_t p ) {
+inline void POS::from(pos2_t p ) {
     x = p.x;
     y = p.y;
 }

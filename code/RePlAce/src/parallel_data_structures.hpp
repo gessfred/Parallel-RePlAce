@@ -13,7 +13,10 @@ using namespace std;
                         meta[7] = pin->flg2.x;\
                         meta[8] = pin->flg2.y;
 
-//From "data_structures.h"
+/**
+Original data structures
+From "data_structures.h"
+*/
 struct FPOS;
 struct POS;
 struct CELLx;
@@ -22,9 +25,9 @@ struct NET;
 struct BIN;
 
 /*
-
+pos2_t represent a 2d discrete point
 */
-struct pos_t {
+struct pos2_t {
     public:
     int x;
     int y;
@@ -32,7 +35,7 @@ struct pos_t {
         x = x_;
         y = y_;
     }
-    inline void Legalize(pos_t lowerBound, pos_t upperBound) {
+    inline void Legalize(pos2_t lowerBound, pos2_t upperBound) {
         if(x < lowerBound.x) x = 0;
         if(x > upperBound.x - 1) x = upperBound.x - 1;
         if(y < lowerBound.y) y = 0;
@@ -69,8 +72,8 @@ struct pin_t {
 
 //for density area_share...
 struct cell_den_t {
-    pos_t binStart;
-    pos_t binEnd;
+    pos2_t binStart;
+    pos2_t binEnd;
     fpos2_t min;
     fpos2_t max;
     fpos2_t size; // half_size
@@ -173,20 +176,14 @@ struct Cell_t {
     }
 };
 
-struct param_t {
-    fpos2_t wlen_cof;
-    double NEG_MAX_EXP;
-    double MIN_PRE;
-    double opt_phi_cof;
-    double dampParam;
-    fpos2_t gp_wlen_weight;
-};
 
 struct circuit_t {
     net_t* nets;
     cell_den_t* rects; // cell rectangles
     cell_phy_t* cells;
-    param_t* params;
+    //schedules
+    //bin matrix
+
 };
 struct bin_t {
     fpos2_t max;
@@ -204,7 +201,7 @@ struct area_t {
     long terminArea;
     float binDensity;
     float fillerDensity;
-    pos_t coord;
+    pos2_t coord;
     inline void from(BIN* bin);
     inline void to(BIN* bin);
 };

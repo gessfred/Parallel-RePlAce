@@ -10,7 +10,7 @@ using std::vector;
 typedef float prec;
 struct POS;
 struct fpos2_t;
-struct pos_t;
+struct pos2_t;
 struct net_t;
 struct net_t;
 struct pin_t;
@@ -176,7 +176,7 @@ struct POS {
         cout << a << ": (" << x << " " << y << " " << z << ")" << endl;   
     }
 
-    inline void from(pos_t p);
+    inline void from(pos2_t p);
 };
 
 struct RECT {
