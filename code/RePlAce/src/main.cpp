@@ -369,7 +369,7 @@ bool isARbyUserCMD;
 bool thermalAwarePlaceCMD;
 bool trialRunCMD;
 bool autoEvalRC_CMD;
-cpu_t profile;
+timing_t profile;
 std::string outputPATH;
     std::fstream fsWk;
 //////////////////////////////////////////////////////////

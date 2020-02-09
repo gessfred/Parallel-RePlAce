@@ -20,3 +20,4 @@ vector<int> refCells(cell_den_t* cells, size_t numberOfCells) {
         cellsRefs.push_back((cells[i].binEnd.y-cells[i].binStart.y)*(cells[i].binEnd.x-cells[i].binStart.x));
     return cellsRefs;
 }
+

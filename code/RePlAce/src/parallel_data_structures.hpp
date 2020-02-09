@@ -1,5 +1,6 @@
 #include <bitset>
 #include <vector>
+#include <map>
 
 using namespace std;
 
@@ -23,9 +24,10 @@ struct CELLx;
 struct PIN;
 struct NET;
 struct BIN;
+struct MODULE;
 
-/*
-pos2_t represent a 2d discrete point
+/**
+pos2_t represents a 2d integer point
 */
 struct pos2_t {
     public:
@@ -43,7 +45,9 @@ struct pos2_t {
     }
 };
 
-
+/**
+fpos2_t represents a 2d real point
+*/
 struct fpos2_t {
     public:
     float x;
@@ -56,7 +60,9 @@ struct fpos2_t {
 } ;
 
 
-//pins as a charge 
+/**
+pin_t represents a pin as a charge
+*/
 struct pin_t {
     fpos2_t expL;
     fpos2_t expR;
@@ -70,7 +76,9 @@ struct pin_t {
     void to(PIN*);
 };
 
-//for density area_share...
+/**
+cell_den_t represents a cell as a rectangle
+*/
 struct cell_den_t {
     pos2_t binStart;
     pos2_t binEnd;
@@ -82,6 +90,8 @@ struct cell_den_t {
     void from(CELLx*);
     void to(CELLx*);    
 };
+
+
 
 struct net_t {
     pin_t* pinArray;
@@ -176,15 +186,22 @@ struct Cell_t {
     }
 };
 
-
-struct circuit_t {
-    net_t* nets;
-    cell_den_t* rects; // cell rectangles
-    cell_phy_t* cells;
-    //schedules
-    //bin matrix
-
+struct timing_t {
+    double total;
+    double ip;
+    double tgp;
+    double cgp;
+    double ns;
+    double wlen;
+    double bins;
+    double density;
+    double fft;
+    double wgrad;
+    double pgrad;
+    double pre;
+    double cost;
 };
+
 struct bin_t {
     fpos2_t max;
     fpos2_t min;
@@ -205,7 +222,42 @@ struct area_t {
     inline void from(BIN* bin);
     inline void to(BIN* bin);
 };
+struct circuit_t {
+    net_t* nets;
+    cell_den_t* rects; // cell rectangles
+    cell_phy_t* cells;
+    bin_t* bins;
+    area_t* areas;
+    fpos2_t** pinOffsets;
 
+    size_t numberOfBins;
+    size_t numberOfCells;
+    size_t numberOfNets;
+    size_t numberOfThreads;
+
+    map<string, float> timing;
+
+    float** cellAreas;
+    float** fillerAreas;
+    //schedules
+    size_t* constPinsPerCell;
+    size_t* constPinsPerNet;
+    //bin matrix
+
+    public:
+    circuit_t () {
+    }
+
+    circuit_t(size_t numberOfThreads) {
+        this->numberOfThreads = numberOfThreads;
+    }
+
+    inline circuit_t* withCells(CELLx* cells, size_t numberOfCells);
+    inline circuit_t* withModules(MODULE* modules, size_t numberOfModules);
+    inline circuit_t* withNets(NET* nets, size_t numberOfNets);
+    inline circuit_t* withBins(BIN* bins, size_t numberOfBins);
+    inline void destroy(CELLx* cells, NET* nets, BIN* bins);
+};
 
 vector<int> refIo(cell_phy_t* cells, size_t numberOfCells);
 vector<int> refNets(net_t* nets, size_t numberOfNets);

@@ -514,21 +514,7 @@ inline void Cell_t::Copyback(cell_t* destination) {
     }
 }
 */
-struct cpu_t {
-    double total;
-    double ip;
-    double tgp;
-    double cgp;
-    double ns;
-    double wlen;
-    double bins;
-    double density;
-    double fft;
-    double wgrad;
-    double pgrad;
-    double pre;
-    double cost;
-};
+
 
 enum { STDCELLonly, MIXED };
 extern std::string outputPATH;
@@ -871,7 +857,7 @@ extern bool stnCMD;  // lutong
 extern bool trialRunCMD;
 extern bool autoEvalRC_CMD;
 extern     std::fstream fsWk;
-extern cpu_t profile;
+extern timing_t profile;
 
 //////////////////////////////////////////////////////////////////////////
 // Defined in main.cpp ///////////////////////////////////////////////////
@@ -1071,5 +1057,82 @@ inline prec pGetCommonAreaXY( FPOS aLL, FPOS aUR, FPOS bLL, FPOS bUR ) {
         return (xUR - xLL) * (yUR - yLL);
     }
 }
+
+/**
+ * From parallel
+ * 
+*/
+inline circuit_t* circuit_t::withCells(CELLx* cells, size_t numberOfCells) {
+    this->numberOfCells = numberOfCells;
+    this->rects = (cell_den_t*)calloc(sizeof(cell_den_t), numberOfCells);
+    this->cells = (cell_phy_t*)calloc(sizeof(cell_phy_t), numberOfCells);
+    for(int k=0; k < numberOfCells; ++k) {
+        this->rects[k].from(&cells[k]);
+    }  
+    for(int i = 0; i < numberOfCells; i++) {
+        CELLx* cell = &cells[i];
+        cell_phy_t* cpy = &this->cells[i];
+        cpy->type = cell->flg;
+        cpy->pinCNT = cell->pinCNTinObject;
+        cpy->pinArrayPtr = (pin_t**)calloc(sizeof(pin_t*), cpy->pinCNT);
+        for(int k = 0; k < cell->pinCNTinObject; ++k) {
+            PIN* p = cell->pin[k];
+            cpy->pinArrayPtr[k] = &this->nets[p->netID].pinArray[p->pinIDinNet];
+        }
+    }
+    this->constPinsPerCell = schedule(refCells(this->rects, this->numberOfCells), numThread);
+    return this;
+}
+inline circuit_t* circuit_t::withModules(MODULE* modules, size_t numberOfModules) {
+    this->pinOffsets = (fpos2_t**)calloc(sizeof(fpos2_t*), numberOfModules);
+    for(size_t i = 0; i < numberOfModules; i++) {
+        MODULE* curModule = &modules[i];
+        fpos2_t* arr = this->pinOffsets[i] = (fpos2_t*)calloc(sizeof(fpos2_t), curModule->pinCNTinObject);
+        for(int j = 0; j < curModule->pinCNTinObject; j++) { 
+            arr[j].from(curModule->pof[j]);
+        }
+    }
+    return this;
+}
+inline circuit_t* circuit_t::withNets(NET* nets, size_t numberOfNets) {
+    this->numberOfNets = numberOfNets;
+    this->nets = (net_t*)malloc(sizeof(net_t) * numberOfNets);
+    for(int k = 0; k < numberOfNets; ++k) {
+        this->nets[k].from(&nets[k]);
+    }
+    this->constPinsPerNet = schedule(refNets(this->nets, this->numberOfNets), numThread);
+    return this;
+}
+inline circuit_t* circuit_t::withBins(BIN* bins, size_t numberOfBins) {
+    this->numberOfBins = numberOfBins;
+    this->bins = (bin_t*)calloc(sizeof(bin_t), numberOfBins);
+    this->areas = (area_t*)calloc(sizeof(area_t), numberOfBins);
+    this->cellAreas = (float**)calloc(sizeof(float*), this->numberOfThreads);
+    for(int j = 0; j < this->numberOfThreads; ++j) {
+        this->cellAreas[j] = (float*)aligned_alloc(64, sizeof(float)*numberOfBins);
+    }
+    this->fillerAreas = (float**)calloc(sizeof(float*), this->numberOfThreads);
+    for(int j = 0; j < this->numberOfThreads; ++j) {
+        this->fillerAreas[j] = (float*)aligned_alloc(64, sizeof(float)*numberOfBins);
+    }
+    for(int k = 0; k < numberOfBins; ++k) {
+        this->bins[k].from(&bins[k]);
+        this->areas[k].from(&bins[k]);
+    }
+    return this;
+}
+
+inline void circuit_t::destroy(CELLx* cells, NET* nets, BIN* bins) {
+    for(int k=0; k < this->numberOfCells; ++k) {
+        this->rects[k].to(&cells[k]);
+    }
+    for(int k = 0; k < this->numberOfNets; ++k) {
+        nets[k].copy(&this->nets[k]);
+    }
+    for(int k = 0; k < this->numberOfBins; ++k) {
+        this->bins[k].to(&bins[k]);
+    }
+}
+
 
 #endif

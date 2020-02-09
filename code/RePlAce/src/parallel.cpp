@@ -1,6 +1,7 @@
 #include "parallel.hpp"
 
-void update_wirelength(circuit_t* circuit, FPOS *st, fpos2_t** poff, size_t* wrk_ld, double* time) {
+void update_wirelength(circuit_t* circuit, FPOS *st) {
+    size_t* wrk_ld = circuit->constPinsPerNet;
     net_t* nets = circuit->nets;
     cell_den_t* cells = circuit->rects;
     for(int b = 0; b < gcell_cnt; b++) {
@@ -35,7 +36,7 @@ void update_wirelength(circuit_t* circuit, FPOS *st, fpos2_t** poff, size_t* wrk
             for(int j = 0; j < net->pinCNT; j++) {
                 pin_t* pin = &net->pinArray[j];
                 if(!pin->meta[0]) {
-                    fpos2_t pof = poff[pin->moduleID][pin->pinID];
+                    fpos2_t pof = circuit->pinOffsets[pin->moduleID][pin->pinID];
                     FPOS center = st[pin->moduleID];
                     fpos2_t coord;
                     coord.x = center.x + pof.x;
@@ -98,7 +99,7 @@ void update_wirelength(circuit_t* circuit, FPOS *st, fpos2_t** poff, size_t* wrk
         }
     }
     std::chrono::duration<double> diff = std::chrono::system_clock::now()-start;
-    *time = diff.count();
+    //*time = diff.count();
 }
 
 //area share of a cell
@@ -200,8 +201,11 @@ void put_wirelength_grad(cell_phy_t* cell, net_t* nets, FPOS *grad) {
 //filler=true
 void update_fill_gradient(FPOS *dst, FPOS *wdst,
                           FPOS *pdst, FPOS *pdstl, int N,
-                          prec *cellLambdaArr, bool onlyPreCon, bin_t* bins, cell_phy_t* ios, net_t* nets, double* time, cell_den_t* cels) {
-    time_start(time);
+                          prec *cellLambdaArr, bool onlyPreCon, circuit_t* circuit) {
+    bin_t* bins = circuit->bins;
+    cell_phy_t* ios = circuit->cells;
+    net_t* nets = circuit->nets;
+    cell_den_t* cels = circuit->rects;
     struct FPOS wgrad, pgrad, pgradl, wpre, charge_dpre, pre;
     #pragma omp parallel for num_threads(numThread)
     for(int i = moduleCNT; i < N; i++) {
@@ -226,16 +230,21 @@ void update_fill_gradient(FPOS *dst, FPOS *wdst,
         dst[i].x /= pre.x;
         dst[i].y /= pre.y;
     }
-    time_end(time);
 }
 
 
 void update_gradient(FPOS *dst, FPOS *wdst,
                           FPOS *pdst, FPOS *pdstl, int N,
-                          prec *cellLambdaArr, bool onlyPreCon, bin_t* bins, cell_phy_t* ios, net_t* nets, double* time, size_t* W1, cell_den_t* cels) {
+                          prec *cellLambdaArr, bool onlyPreCon, circuit_t* circuit) {
     //double dampParam = circuit->params->dampParam;
     //double MIN_PRE = circuit->params->MIN_PRE;
     //double opt_phi_cof = circuit->params->opt_phi_cof;
+    bin_t* bins = circuit->bins;
+    cell_phy_t* ios = circuit->cells;
+    net_t* nets = circuit->nets;
+    cell_den_t* cels = circuit->rects;
+    size_t* W1 = circuit->constPinsPerCell;
+
     struct FPOS wpre, charge_dpre, pre;
     auto t0 = std::chrono::steady_clock::now();
     #pragma omp parallel num_threads(numThread)
@@ -253,7 +262,7 @@ void update_gradient(FPOS *dst, FPOS *wdst,
         }
     }
     profile.wgrad += time_since(t0);
-    time_start(time);
+    //time_start(time);
     t0 = std::chrono::steady_clock::now();
     #pragma omp parallel for num_threads(numThread)
     for(int i = 0; i < N; i++) {
@@ -267,7 +276,7 @@ void update_gradient(FPOS *dst, FPOS *wdst,
         dst[i].y += opt_phi_cof * pgrad.y;
     }
     profile.pgrad += time_since(t0);
-    time_end(time);
+    //time_end(time);
     t0 = std::chrono::steady_clock::now();
     for(int i = 0; i < N; i++) {
         cellLambdaArr[i] *= dampParam;
@@ -312,7 +321,13 @@ void update_cells_frame(cell_den_t* cells) {
 //MIN_PRE, opt_phi_cof, dampParam
 
 // 2D cGP2D
-void update_field_potential(cell_den_t* cells, bin_t* bins, area_t* areas, float** localAr, float** localAr2, size_t* bound, double* time, double* time2) {
+void update_field_potential(circuit_t* circuit) {
+    float** localAr = circuit->cellAreas;
+    float** localAr2 = circuit->fillerAreas;
+    size_t* bound = circuit->constPinsPerCell;
+    cell_den_t* cells = circuit->rects;
+    bin_t* bins = circuit->bins;
+    area_t* areas = circuit->areas;
     gsum_ovf_area = 0;
     gsum_phi = 0;
     TIER* tier = &tier_st[0];
@@ -379,7 +394,6 @@ void update_field_potential(cell_den_t* cells, bin_t* bins, area_t* areas, float
             bins[k].fillerArea += localAr2[i][k];
         }
     }
-    *time += time_since(start);
     for(int i = 0; i < tier->tot_bin_cnt; i++) {
         bin_t* bp = &bins[i];
         area_t* a = &areas[i];
@@ -403,5 +417,4 @@ void update_field_potential(cell_den_t* cells, bin_t* bins, area_t* areas, float
     tier->sum_ovf = sum_ovf_area / tier->modu_area;
     gsum_ovf_area += sum_ovf_area;
     gsum_ovfl = gsum_ovf_area / total_modu_area;
-    *time2 += time_since(start);
 }
