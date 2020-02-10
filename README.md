@@ -1,32 +1,14 @@
 # Parallel RePlAce
 
+[![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
+
 Based on the paper "A Shared-Memory Parallel Implementation of the RePlAce Global Cell Placer" from VLSID2020.
 
 RePlAce is a state-of-the-art prototype of a flat, analytic, and nonlinear global cell placement algorithm, which models a placement instance as an electrostatic system with positively charged objects. 
 This extension includes techniques to reduce memory contention and to effectively balance the workload among threads, targeting the most substantial performance bottlenecks. 
 With 2–12 threads, our parallel RePlAce speeds up the bin density function by a factor of 4.2–10×, the wirelength function by a factor of 2.3–3×, and the cost gradient function by a factor of 2.9–6.6× compared to the single-threaded original RePlAce baseline. Moreover, our parallel RePlAce is ≈3.5× faster than the state-of-the-art PyTorch-based placer DREAMPlace, when both are running on 12 CPU cores
 
-## How to run
-
-Disclaimer: reported performance is obtained from source, performance in container not measured.
-
-### Docker
-
-In `./`
-
-`docker build . -t <your_tag>`
-
-Then
-
-`docker -it run <your_tag>`
-
-Or 
-
-`docker -it run <your_tag> <numberOfThreads> <benchmark_name> <csv_output>`
-
-*Image size: ~10GB*
-
-### From source
+## Installation
 
 Install the dependencies:
 
@@ -51,6 +33,30 @@ apt-get install -y intel-mkl-2018.2-046 intel-ipp-2018.4-057
 
 Then go to `code/RePlAce` and do `make`
 
+## Usage
+
+Disclaimer: reported performance is obtained from source, performance in container not measured.
+
+### Docker
+
+In `./`
+
+`docker build . -t <your_tag>`
+
+Then
+
+`docker -it run <your_tag>`
+
+Or 
+
+`docker -it run <your_tag> <numberOfThreads> <benchmark_name> <csv_output>`
+
+*Image size: ~10GB*
+
+### Installed
+
+
+
 ## Experimental results
 
 |          | RePlAce |         | Sequential |         | 1 Thread |         | 2 Threads |         | 4 Threads |         | 8 Threads |         | 12 Threads |         | RePlAce (12 t.) |         | DREAMPlace (12 t.) |         |
@@ -65,7 +71,18 @@ Then go to `code/RePlAce` and do `make`
 | bigblue4 | 2461.81 | 3478.51 | 1571.31    | 2580.64 | 1675.59  | 2678.92 | 1335.57   | 2212.92 | 1003.35   | 1781.11 | 821.90    | 1548.15 | 763.90     | 1472.50 | 1073.69         | 1777.88 | 2264.48            | 2610.96 |
 | geomean  | 370.59  | 556.67  | 231.12     | 418.62  | 234.01   | 419.65  | 185.80    | 351.07  | 146.51    | 295.34  | 126.16    | 264.50  | 121.21     | 256.89  | 177.66          | 313.14  | 427.91             | 494.52  |
 
-## Contributors
+
+## Publication
+
+
+
+## Citation
+
+```bibtex
+
+```
+
+## Authors
 - @gessfred Frédéric Gessler(frederic.gessler@epfl.ch) EPFL
 - @mirjanastojilovic Mirjana Stojilovic(mirjana.stojilovic@epfl.ch) EPFL
 - Philip Brisk UCSD
