@@ -1,6 +1,6 @@
 # Parallel RePlAce
 
-Based on commit `dbbe12c` from [https://github.com/The-OpenROAD-Project/RePlAce](The-OpenROAD-Project).
+Based on commit `dbbe12c` from [The-OpenROAD-Project](https://github.com/The-OpenROAD-Project/RePlAce).
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
@@ -59,7 +59,7 @@ Or
 
 ## Publication
 
-[https://infoscience.epfl.ch/record/273833?ln=en](preprint)
+[preprint](https://infoscience.epfl.ch/record/273833?ln=en)
 
 ## Citation
 
