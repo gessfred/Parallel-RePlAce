@@ -77,6 +77,6 @@ Or
 ```
 
 ## Authors
-- @gessfred Frédéric Gessler(frederic.gessler@epfl.ch) EPFL
-- @mirjanastojilovic Mirjana Stojilovic(mirjana.stojilovic@epfl.ch) EPFL
+- [@gessfred](https://github.com/gessfred) Frédéric Gessler(frederic.gessler@epfl.ch) EPFL
+- [@mirjanastojilovic](https://github.com/mirjanastojilovic) Mirjana Stojilovic(mirjana.stojilovic@epfl.ch) EPFL
 - Philip Brisk UCSD
