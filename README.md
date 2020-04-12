@@ -64,15 +64,14 @@ Or
 ## Citation
 
 ```bibtex
-@article{Gessler:273833,
-      title = {A Shared-Memory Parallel Implementation of the RePlAce  Global Cell Placer},
-      author = {Gessler, Frédéric and Brisk, Philip and Stojilovic,  Mirjana},
-      publisher = {IEEE},
-      journal = {[Proceedings 33rd International Conference on VLSI Design,  Held concurrently with 19th International Conference on  Embedded Systems]},
-      pages = {6},
-      year = {2020},
-      abstract = {RePlAce is a state-of-the-art prototype of a flat,  analytic, and nonlinear global cell placement algorithm,  which models a placement instance as an electrostatic  system with positively charged objects. It can handle  large-scale standard-cell and mixed-cell placement, while  achieving shorter wirelength and similar or shorter  runtimes than other state-of-the-art placers on the  ISPD-2005/2006 standard-cell benchmarks; however, the  runtime of RePlAce on these benchmarks ranges from 15  minutes to 5+ hours on a 2.6 GHz Intel Xeon server running  a single thread, rendering development cycles prohibitively  long. To address this concern, this paper introduces a  multi-threaded shared-memory implementation of RePlAce. The  contributions include techniques to reduce memory  contention and to effectively balance the workload among  threads, targeting the most substantial performance  bottlenecks. With 2–12 threads, our parallel RePlAce  speeds up the bin density function by a factor of  4.2–10×, the wirelength function by a factor of  2.3–3×, and the cost gradient function by a factor of  2.9–6.6× compared to the single-threaded original  RePlAce baseline. Moreover, our parallel RePlAce is  ≈3.5× faster than the state-of-the-art PyTorch-based  placer DREAMPlace, when both are running on 12 CPU cores.},
-      url = {http://infoscience.epfl.ch/record/273833},
+@InProceedings{GesslerJan20,
+    author = {Gessler, Frédéric and Brisk, Philip and Stojilovi\'{c},  Mirjana},
+    title = {A Shared-Memory Parallel Implementation of the {RePlAce} Global Cell Placer},
+    booktitle = {Proceedings of the 33rd International Conference on VLSI Design and the 19th International Conference on Embedded Design},
+    address = {Bengaluru, India}
+    year = 2020,
+    moth = jan,
+    pages = {6},
 }
 ```
 
