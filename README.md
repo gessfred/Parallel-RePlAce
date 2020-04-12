@@ -1,6 +1,6 @@
 # Parallel RePlAce
 
-Based on commit `dbbe12c` from [The-OpenROAD-Project](https://github.com/The-OpenROAD-Project/RePlAce).
+Based on commit [dbbe12c](https://github.com/The-OpenROAD-Project/RePlAce/tree/dbbe12cf3bf2bee7afd4489f84d8c64d3f9ecfe9) from [The-OpenROAD-Project](https://github.com/The-OpenROAD-Project/RePlAce) (Sep. 2018).
 
 [![License](https://img.shields.io/badge/License-BSD%203--Clause-blue.svg)](https://opensource.org/licenses/BSD-3-Clause)
 
